@@ -1,0 +1,353 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2500" height="1686" viewBox="0 0 2500 1686">
+<defs>
+  <!-- Background -->
+  <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#080C18"/>
+    <stop offset="100%" stop-color="#111827"/>
+  </linearGradient>
+
+  <!-- Cell color gradients -->
+  <linearGradient id="gGreen" x1="0%" y1="0%" x2="0%" y2="100%">
+    <stop offset="0%" stop-color="#34D399"/>
+    <stop offset="100%" stop-color="#059669"/>
+  </linearGradient>
+  <linearGradient id="gAmber" x1="0%" y1="0%" x2="0%" y2="100%">
+    <stop offset="0%" stop-color="#FBBF24"/>
+    <stop offset="100%" stop-color="#D97706"/>
+  </linearGradient>
+  <linearGradient id="gViolet" x1="0%" y1="0%" x2="0%" y2="100%">
+    <stop offset="0%" stop-color="#C084FC"/>
+    <stop offset="100%" stop-color="#7C3AED"/>
+  </linearGradient>
+  <linearGradient id="gBlue" x1="0%" y1="0%" x2="0%" y2="100%">
+    <stop offset="0%" stop-color="#60A5FA"/>
+    <stop offset="100%" stop-color="#1D4ED8"/>
+  </linearGradient>
+  <linearGradient id="gCyan" x1="0%" y1="0%" x2="0%" y2="100%">
+    <stop offset="0%" stop-color="#22D3EE"/>
+    <stop offset="100%" stop-color="#0E7490"/>
+  </linearGradient>
+  <linearGradient id="gSlate" x1="0%" y1="0%" x2="0%" y2="100%">
+    <stop offset="0%" stop-color="#94A3B8"/>
+    <stop offset="100%" stop-color="#475569"/>
+  </linearGradient>
+
+  <!-- Glow / shadow -->
+  <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+    <feGaussianBlur stdDeviation="14" result="blur"/>
+    <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+  </filter>
+  <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="0" dy="6" stdDeviation="16" flood-color="#000000" flood-opacity="0.4"/>
+  </filter>
+  <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur stdDeviation="8" result="b"/>
+    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+
+  <!-- Dot grid pattern -->
+  <pattern id="dots" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+    <circle cx="30" cy="30" r="1.5" fill="#ffffff0a"/>
+  </pattern>
+</defs>
+
+<!-- ── Background ── -->
+<rect width="2500" height="1686" fill="url(#bgGrad)"/>
+<rect width="2500" height="1686" fill="url(#dots)"/>
+
+<!-- Grid lines -->
+<line x1="833"  y1="0"    x2="833"  y2="1686" stroke="#ffffff10" stroke-width="2"/>
+<line x1="1667" y1="0"    x2="1667" y2="1686" stroke="#ffffff10" stroke-width="2"/>
+<line x1="0"    y1="843"  x2="2500" y2="843"  stroke="#ffffff10" stroke-width="2"/>
+
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- CELL 1 ： 上班打卡  cx=416  cy=280  GREEN           -->
+<!-- ════════════════════════════════════════════════════ -->
+<rect x="28" y="28" width="777" height="787" rx="28" fill="#34D39908" stroke="#34D39930" stroke-width="2"/>
+<!-- Ambient glow behind circle -->
+<circle cx="416" cy="280" r="160" fill="#34D399" opacity="0.08"/>
+<!-- Main circle -->
+<circle cx="416" cy="280" r="135" fill="url(#gGreen)" filter="url(#shadow)"/>
+<!-- Circle inner highlight -->
+<ellipse cx="390" cy="185" rx="70" ry="35" fill="#fff" opacity="0.10"/>
+
+<!-- Robot face panel -->
+<rect x="354" y="228" width="124" height="104" rx="18" fill="#080C18" opacity="0.88"/>
+<rect x="354" y="228" width="124" height="104" rx="18" fill="none" stroke="#34D39940" stroke-width="1.5"/>
+<!-- Antenna -->
+<line x1="416" y1="228" x2="416" y2="196" stroke="#ffffffaa" stroke-width="5" stroke-linecap="round"/>
+<circle cx="416" cy="190" r="14" fill="#34D399" filter="url(#softGlow)"/>
+<circle cx="416" cy="190" r="8"  fill="#fff" opacity="0.9"/>
+<!-- Ear studs -->
+<circle cx="354" cy="280" r="12" fill="#34D399" opacity="0.85"/>
+<circle cx="354" cy="280" r="5"  fill="#fff"    opacity="0.80"/>
+<circle cx="478" cy="280" r="12" fill="#34D399" opacity="0.85"/>
+<circle cx="478" cy="280" r="5"  fill="#fff"    opacity="0.80"/>
+<!-- Eyes -->
+<circle cx="392" cy="262" r="18" fill="#34D399" opacity="0.25"/>
+<circle cx="440" cy="262" r="18" fill="#34D399" opacity="0.25"/>
+<circle cx="392" cy="262" r="13" fill="#fff" opacity="0.95"/>
+<circle cx="440" cy="262" r="13" fill="#fff" opacity="0.95"/>
+<circle cx="392" cy="262" r="8"  fill="#059669"/>
+<circle cx="440" cy="262" r="8"  fill="#059669"/>
+<circle cx="397" cy="257" r="4"  fill="#fff" opacity="0.9"/>
+<circle cx="445" cy="257" r="4"  fill="#fff" opacity="0.9"/>
+<!-- Mouth LED bar -->
+<rect x="392" y="298" width="48" height="11" rx="5.5" fill="#34D399" opacity="0.6"/>
+<circle cx="404" cy="303" r="3"  fill="#fff" opacity="0.7"/>
+<circle cx="416" cy="303" r="3"  fill="#fff" opacity="0.7"/>
+<circle cx="428" cy="303" r="3"  fill="#fff" opacity="0.7"/>
+<!-- Function badge: sun -->
+<circle cx="503" cy="366" r="30" fill="#080C18" opacity="0.9"/>
+<circle cx="503" cy="366" r="26" fill="#34D399" opacity="0.18"/>
+<circle cx="503" cy="366" r="11" fill="#FDE68A"/>
+<g stroke="#FDE68A" stroke-width="3.5" stroke-linecap="round">
+  <line x1="503" y1="345" x2="503" y2="340"/>
+  <line x1="503" y1="387" x2="503" y2="392"/>
+  <line x1="482" y1="366" x2="477" y2="366"/>
+  <line x1="524" y1="366" x2="529" y2="366"/>
+  <line x1="488" y1="351" x2="484" y2="347"/>
+  <line x1="518" y1="351" x2="522" y2="347"/>
+  <line x1="488" y1="381" x2="484" y2="385"/>
+  <line x1="518" y1="381" x2="522" y2="385"/>
+</g>
+<!-- Text -->
+<text x="416" y="492" font-family="'PingFang TC','Microsoft JhengHei',sans-serif" font-size="84" font-weight="800" fill="#ffffff" text-anchor="middle">上班打卡</text>
+<text x="416" y="575" font-family="'PingFang TC','Microsoft JhengHei',sans-serif" font-size="42" fill="#34D399" text-anchor="middle" font-weight="700" letter-spacing="3">CLOCK IN</text>
+<text x="416" y="658" font-family="'PingFang TC','Microsoft JhengHei',sans-serif" font-size="34" fill="#ffffff50" text-anchor="middle">點擊記錄上班時間</text>
+<rect x="316" y="726" width="200" height="7" rx="3.5" fill="url(#gGreen)" opacity="0.85"/>
+
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- CELL 2 ： 下班打卡  cx=1250 cy=280  AMBER           -->
+<!-- ════════════════════════════════════════════════════ -->
+<rect x="861" y="28" width="778" height="787" rx="28" fill="#FBBF2408" stroke="#FBBF2430" stroke-width="2"/>
+<circle cx="1250" cy="280" r="160" fill="#FBBF24" opacity="0.08"/>
+<circle cx="1250" cy="280" r="135" fill="url(#gAmber)" filter="url(#shadow)"/>
+<ellipse cx="1224" cy="185" rx="70" ry="35" fill="#fff" opacity="0.10"/>
+
+<rect x="1188" y="228" width="124" height="104" rx="18" fill="#080C18" opacity="0.88"/>
+<rect x="1188" y="228" width="124" height="104" rx="18" fill="none" stroke="#FBBF2440" stroke-width="1.5"/>
+<line x1="1250" y1="228" x2="1250" y2="196" stroke="#ffffffaa" stroke-width="5" stroke-linecap="round"/>
+<circle cx="1250" cy="190" r="14" fill="#FBBF24" filter="url(#softGlow)"/>
+<circle cx="1250" cy="190" r="8"  fill="#fff" opacity="0.9"/>
+<circle cx="1188" cy="280" r="12" fill="#FBBF24" opacity="0.85"/>
+<circle cx="1188" cy="280" r="5"  fill="#fff"    opacity="0.80"/>
+<circle cx="1312" cy="280" r="12" fill="#FBBF24" opacity="0.85"/>
+<circle cx="1312" cy="280" r="5"  fill="#fff"    opacity="0.80"/>
+<circle cx="1226" cy="262" r="18" fill="#FBBF24" opacity="0.25"/>
+<circle cx="1274" cy="262" r="18" fill="#FBBF24" opacity="0.25"/>
+<circle cx="1226" cy="262" r="13" fill="#fff" opacity="0.95"/>
+<circle cx="1274" cy="262" r="13" fill="#fff" opacity="0.95"/>
+<circle cx="1226" cy="262" r="8"  fill="#D97706"/>
+<circle cx="1274" cy="262" r="8"  fill="#D97706"/>
+<circle cx="1231" cy="257" r="4"  fill="#fff" opacity="0.9"/>
+<circle cx="1279" cy="257" r="4"  fill="#fff" opacity="0.9"/>
+<!-- Sleepy / end-of-day eyes: small arcs to suggest tiredness -->
+<path d="M1218,256 Q1226,250 1234,256" fill="none" stroke="#080C18" stroke-width="3" stroke-linecap="round"/>
+<path d="M1266,256 Q1274,250 1282,256" fill="none" stroke="#080C18" stroke-width="3" stroke-linecap="round"/>
+<rect x="1226" y="298" width="48" height="11" rx="5.5" fill="#FBBF24" opacity="0.6"/>
+<circle cx="1238" cy="303" r="3"  fill="#fff" opacity="0.7"/>
+<circle cx="1250" cy="303" r="3"  fill="#fff" opacity="0.7"/>
+<circle cx="1262" cy="303" r="3"  fill="#fff" opacity="0.7"/>
+<!-- Badge: moon -->
+<circle cx="1337" cy="366" r="30" fill="#080C18" opacity="0.9"/>
+<circle cx="1337" cy="366" r="26" fill="#FBBF24" opacity="0.18"/>
+<path d="M1337,350 A16,16 0 1,0 1337,382 A11,11 0 1,1 1337,350 Z" fill="#FDE68A"/>
+<circle cx="1349" cy="354" r="3"  fill="#FDE68A" opacity="0.7"/>
+<circle cx="1354" cy="366" r="2"  fill="#FDE68A" opacity="0.5"/>
+
+<text x="1250" y="492" font-family="'PingFang TC','Microsoft JhengHei',sans-serif" font-size="84" font-weight="800" fill="#ffffff" text-anchor="middle">下班打卡</text>
+<text x="1250" y="575" font-family="'PingFang TC','Microsoft JhengHei',sans-serif" font-size="42" fill="#FBBF24" text-anchor="middle" font-weight="700" letter-spacing="3">CLOCK OUT</text>
+<text x="1250" y="658" font-family="'PingFang TC','Microsoft JhengHei',sans-serif" font-size="34" fill="#ffffff50" text-anchor="middle">點擊記錄下班時間</text>
+<rect x="1150" y="726" width="200" height="7" rx="3.5" fill="url(#gAmber)" opacity="0.85"/>
+
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- CELL 3 ： 打卡紀錄  cx=2084 cy=280  VIOLET          -->
+<!-- ════════════════════════════════════════════════════ -->
+<rect x="1695" y="28" width="777" height="787" rx="28" fill="#C084FC08" stroke="#C084FC30" stroke-width="2"/>
+<circle cx="2084" cy="280" r="160" fill="#C084FC" opacity="0.08"/>
+<circle cx="2084" cy="280" r="135" fill="url(#gViolet)" filter="url(#shadow)"/>
+<ellipse cx="2058" cy="185" rx="70" ry="35" fill="#fff" opacity="0.10"/>
+
+<rect x="2022" y="228" width="124" height="104" rx="18" fill="#080C18" opacity="0.88"/>
+<rect x="2022" y="228" width="124" height="104" rx="18" fill="none" stroke="#C084FC40" stroke-width="1.5"/>
+<line x1="2084" y1="228" x2="2084" y2="196" stroke="#ffffffaa" stroke-width="5" stroke-linecap="round"/>
+<circle cx="2084" cy="190" r="14" fill="#C084FC" filter="url(#softGlow)"/>
+<circle cx="2084" cy="190" r="8"  fill="#fff" opacity="0.9"/>
+<circle cx="2022" cy="280" r="12" fill="#C084FC" opacity="0.85"/>
+<circle cx="2022" cy="280" r="5"  fill="#fff"    opacity="0.80"/>
+<circle cx="2146" cy="280" r="12" fill="#C084FC" opacity="0.85"/>
+<circle cx="2146" cy="280" r="5"  fill="#fff"    opacity="0.80"/>
+<circle cx="2060" cy="262" r="18" fill="#C084FC" opacity="0.25"/>
+<circle cx="2108" cy="262" r="18" fill="#C084FC" opacity="0.25"/>
+<circle cx="2060" cy="262" r="13" fill="#fff" opacity="0.95"/>
+<circle cx="2108" cy="262" r="13" fill="#fff" opacity="0.95"/>
+<circle cx="2060" cy="262" r="8"  fill="#7C3AED"/>
+<circle cx="2108" cy="262" r="8"  fill="#7C3AED"/>
+<circle cx="2065" cy="257" r="4"  fill="#fff" opacity="0.9"/>
+<circle cx="2113" cy="257" r="4"  fill="#fff" opacity="0.9"/>
+<rect x="2060" y="298" width="48" height="11" rx="5.5" fill="#C084FC" opacity="0.6"/>
+<circle cx="2072" cy="303" r="3"  fill="#fff" opacity="0.7"/>
+<circle cx="2084" cy="303" r="3"  fill="#fff" opacity="0.7"/>
+<circle cx="2096" cy="303" r="3"  fill="#fff" opacity="0.7"/>
+<!-- Badge: clock -->
+<circle cx="2171" cy="366" r="30" fill="#080C18" opacity="0.9"/>
+<circle cx="2171" cy="366" r="26" fill="#C084FC" opacity="0.18"/>
+<circle cx="2171" cy="366" r="14" fill="none" stroke="#C084FC" stroke-width="3"/>
+<circle cx="2171" cy="366" r="3"  fill="#C084FC"/>
+<line x1="2171" y1="366" x2="2171" y2="355" stroke="#C084FC" stroke-width="3" stroke-linecap="round"/>
+<line x1="2171" y1="366" x2="2180" y2="370" stroke="#C084FC" stroke-width="3" stroke-linecap="round"/>
+
+<text x="2084" y="492" font-family="'PingFang TC','Microsoft JhengHei',sans-serif" font-size="84" font-weight="800" fill="#ffffff" text-anchor="middle">打卡紀錄</text>
+<text x="2084" y="575" font-family="'PingFang TC','Microsoft JhengHei',sans-serif" font-size="42" fill="#C084FC" text-anchor="middle" font-weight="700" letter-spacing="3">MY RECORDS</text>
+<text x="2084" y="658" font-family="'PingFang TC','Microsoft JhengHei',sans-serif" font-size="34" fill="#ffffff50" text-anchor="middle">查看近期打卡記錄</text>
+<rect x="1984" y="726" width="200" height="7" rx="3.5" fill="url(#gViolet)" opacity="0.85"/>
+
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- CELL 4 ： 填寫工時  cx=416  cy=1123 BLUE            -->
+<!-- ════════════════════════════════════════════════════ -->
+<rect x="28" y="871" width="777" height="787" rx="28" fill="#60A5FA08" stroke="#60A5FA30" stroke-width="2"/>
+<circle cx="416" cy="1123" r="160" fill="#60A5FA" opacity="0.08"/>
+<circle cx="416" cy="1123" r="135" fill="url(#gBlue)" filter="url(#shadow)"/>
+<ellipse cx="390" cy="1028" rx="70" ry="35" fill="#fff" opacity="0.10"/>
+
+<rect x="354" y="1071" width="124" height="104" rx="18" fill="#080C18" opacity="0.88"/>
+<rect x="354" y="1071" width="124" height="104" rx="18" fill="none" stroke="#60A5FA40" stroke-width="1.5"/>
+<line x1="416" y1="1071" x2="416" y2="1039" stroke="#ffffffaa" stroke-width="5" stroke-linecap="round"/>
+<circle cx="416" cy="1033" r="14" fill="#60A5FA" filter="url(#softGlow)"/>
+<circle cx="416" cy="1033" r="8"  fill="#fff" opacity="0.9"/>
+<circle cx="354" cy="1123" r="12" fill="#60A5FA" opacity="0.85"/>
+<circle cx="354" cy="1123" r="5"  fill="#fff"    opacity="0.80"/>
+<circle cx="478" cy="1123" r="12" fill="#60A5FA" opacity="0.85"/>
+<circle cx="478" cy="1123" r="5"  fill="#fff"    opacity="0.80"/>
+<circle cx="392" cy="1105" r="18" fill="#60A5FA" opacity="0.25"/>
+<circle cx="440" cy="1105" r="18" fill="#60A5FA" opacity="0.25"/>
+<circle cx="392" cy="1105" r="13" fill="#fff" opacity="0.95"/>
+<circle cx="440" cy="1105" r="13" fill="#fff" opacity="0.95"/>
+<circle cx="392" cy="1105" r="8"  fill="#1D4ED8"/>
+<circle cx="440" cy="1105" r="8"  fill="#1D4ED8"/>
+<circle cx="397" cy="1100" r="4"  fill="#fff" opacity="0.9"/>
+<circle cx="445" cy="1100" r="4"  fill="#fff" opacity="0.9"/>
+<rect x="392" y="1141" width="48" height="11" rx="5.5" fill="#60A5FA" opacity="0.6"/>
+<circle cx="404" cy="1146" r="3"  fill="#fff" opacity="0.7"/>
+<circle cx="416" cy="1146" r="3"  fill="#fff" opacity="0.7"/>
+<circle cx="428" cy="1146" r="3"  fill="#fff" opacity="0.7"/>
+<!-- Badge: pencil -->
+<circle cx="503" cy="1209" r="30" fill="#080C18" opacity="0.9"/>
+<circle cx="503" cy="1209" r="26" fill="#60A5FA" opacity="0.18"/>
+<g transform="translate(503,1209) rotate(-40)">
+  <rect x="-5" y="-18" width="10" height="28" rx="3" fill="#FDE68A"/>
+  <polygon points="-5,10 5,10 0,20"  fill="#F97316"/>
+  <rect x="-5" y="-18" width="10" height="6" rx="2" fill="#94A3B8"/>
+</g>
+
+<text x="416" y="1335" font-family="'PingFang TC','Microsoft JhengHei',sans-serif" font-size="84" font-weight="800" fill="#ffffff" text-anchor="middle">填寫工時</text>
+<text x="416" y="1418" font-family="'PingFang TC','Microsoft JhengHei',sans-serif" font-size="42" fill="#60A5FA" text-anchor="middle" font-weight="700" letter-spacing="3">WORK HOURS</text>
+<text x="416" y="1501" font-family="'PingFang TC','Microsoft JhengHei',sans-serif" font-size="34" fill="#ffffff50" text-anchor="middle">填寫今日工作時數</text>
+<rect x="316" y="1569" width="200" height="7" rx="3.5" fill="url(#gBlue)" opacity="0.85"/>
+
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- CELL 5 ： 設定帳號  cx=1250 cy=1123 CYAN            -->
+<!-- ════════════════════════════════════════════════════ -->
+<rect x="861" y="871" width="778" height="787" rx="28" fill="#22D3EE08" stroke="#22D3EE30" stroke-width="2"/>
+<circle cx="1250" cy="1123" r="160" fill="#22D3EE" opacity="0.08"/>
+<circle cx="1250" cy="1123" r="135" fill="url(#gCyan)" filter="url(#shadow)"/>
+<ellipse cx="1224" cy="1028" rx="70" ry="35" fill="#fff" opacity="0.10"/>
+
+<rect x="1188" y="1071" width="124" height="104" rx="18" fill="#080C18" opacity="0.88"/>
+<rect x="1188" y="1071" width="124" height="104" rx="18" fill="none" stroke="#22D3EE40" stroke-width="1.5"/>
+<line x1="1250" y1="1071" x2="1250" y2="1039" stroke="#ffffffaa" stroke-width="5" stroke-linecap="round"/>
+<circle cx="1250" cy="1033" r="14" fill="#22D3EE" filter="url(#softGlow)"/>
+<circle cx="1250" cy="1033" r="8"  fill="#fff" opacity="0.9"/>
+<circle cx="1188" cy="1123" r="12" fill="#22D3EE" opacity="0.85"/>
+<circle cx="1188" cy="1123" r="5"  fill="#fff"    opacity="0.80"/>
+<circle cx="1312" cy="1123" r="12" fill="#22D3EE" opacity="0.85"/>
+<circle cx="1312" cy="1123" r="5"  fill="#fff"    opacity="0.80"/>
+<circle cx="1226" cy="1105" r="18" fill="#22D3EE" opacity="0.25"/>
+<circle cx="1274" cy="1105" r="18" fill="#22D3EE" opacity="0.25"/>
+<circle cx="1226" cy="1105" r="13" fill="#fff" opacity="0.95"/>
+<circle cx="1274" cy="1105" r="13" fill="#fff" opacity="0.95"/>
+<circle cx="1226" cy="1105" r="8"  fill="#0E7490"/>
+<circle cx="1274" cy="1105" r="8"  fill="#0E7490"/>
+<circle cx="1231" cy="1100" r="4"  fill="#fff" opacity="0.9"/>
+<circle cx="1279" cy="1100" r="4"  fill="#fff" opacity="0.9"/>
+<!-- Robot has tiny wrench/tool on antenna to suggest setup -->
+<circle cx="1250" cy="1033" r="14" fill="#22D3EE" filter="url(#softGlow)"/>
+<circle cx="1250" cy="1033" r="8"  fill="#fff" opacity="0.9"/>
+<rect x="1226" y="1141" width="48" height="11" rx="5.5" fill="#22D3EE" opacity="0.6"/>
+<circle cx="1238" cy="1146" r="3"  fill="#fff" opacity="0.7"/>
+<circle cx="1250" cy="1146" r="3"  fill="#fff" opacity="0.7"/>
+<circle cx="1262" cy="1146" r="3"  fill="#fff" opacity="0.7"/>
+<!-- Badge: gear -->
+<circle cx="1337" cy="1209" r="30" fill="#080C18" opacity="0.9"/>
+<circle cx="1337" cy="1209" r="26" fill="#22D3EE" opacity="0.18"/>
+<circle cx="1337" cy="1209" r="10" fill="none" stroke="#22D3EE" stroke-width="4"/>
+<circle cx="1337" cy="1209" r="4"  fill="#22D3EE"/>
+<g stroke="#22D3EE" stroke-width="3.5" stroke-linecap="round">
+  <line x1="1337" y1="1190" x2="1337" y2="1186"/>
+  <line x1="1337" y1="1228" x2="1337" y2="1232"/>
+  <line x1="1318" y1="1209" x2="1314" y2="1209"/>
+  <line x1="1356" y1="1209" x2="1360" y2="1209"/>
+  <line x1="1323" y1="1195" x2="1320" y2="1192"/>
+  <line x1="1351" y1="1223" x2="1354" y2="1226"/>
+  <line x1="1351" y1="1195" x2="1354" y2="1192"/>
+  <line x1="1323" y1="1223" x2="1320" y2="1226"/>
+</g>
+
+<text x="1250" y="1335" font-family="'PingFang TC','Microsoft JhengHei',sans-serif" font-size="84" font-weight="800" fill="#ffffff" text-anchor="middle">設定帳號</text>
+<text x="1250" y="1418" font-family="'PingFang TC','Microsoft JhengHei',sans-serif" font-size="42" fill="#22D3EE" text-anchor="middle" font-weight="700" letter-spacing="3">SETUP</text>
+<text x="1250" y="1501" font-family="'PingFang TC','Microsoft JhengHei',sans-serif" font-size="34" fill="#ffffff50" text-anchor="middle">設定 e-Contact 帳密</text>
+<rect x="1150" y="1569" width="200" height="7" rx="3.5" fill="url(#gCyan)" opacity="0.85"/>
+
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- CELL 6 ： 說明      cx=2084 cy=1123 SLATE           -->
+<!-- ════════════════════════════════════════════════════ -->
+<rect x="1695" y="871" width="777" height="787" rx="28" fill="#94A3B808" stroke="#94A3B830" stroke-width="2"/>
+<circle cx="2084" cy="1123" r="160" fill="#94A3B8" opacity="0.08"/>
+<circle cx="2084" cy="1123" r="135" fill="url(#gSlate)" filter="url(#shadow)"/>
+<ellipse cx="2058" cy="1028" rx="70" ry="35" fill="#fff" opacity="0.10"/>
+
+<rect x="2022" y="1071" width="124" height="104" rx="18" fill="#080C18" opacity="0.88"/>
+<rect x="2022" y="1071" width="124" height="104" rx="18" fill="none" stroke="#94A3B840" stroke-width="1.5"/>
+<line x1="2084" y1="1071" x2="2084" y2="1039" stroke="#ffffffaa" stroke-width="5" stroke-linecap="round"/>
+<circle cx="2084" cy="1033" r="14" fill="#94A3B8" filter="url(#softGlow)"/>
+<circle cx="2084" cy="1033" r="8"  fill="#fff" opacity="0.9"/>
+<!-- Question mark antenna ball -->
+<text x="2084" y="1037" font-family="sans-serif" font-size="14" font-weight="900" fill="#080C18" text-anchor="middle">?</text>
+<circle cx="2022" cy="1123" r="12" fill="#94A3B8" opacity="0.85"/>
+<circle cx="2022" cy="1123" r="5"  fill="#fff"    opacity="0.80"/>
+<circle cx="2146" cy="1123" r="12" fill="#94A3B8" opacity="0.85"/>
+<circle cx="2146" cy="1123" r="5"  fill="#fff"    opacity="0.80"/>
+<circle cx="2060" cy="1105" r="18" fill="#94A3B8" opacity="0.25"/>
+<circle cx="2108" cy="1105" r="18" fill="#94A3B8" opacity="0.25"/>
+<circle cx="2060" cy="1105" r="13" fill="#fff" opacity="0.95"/>
+<circle cx="2108" cy="1105" r="13" fill="#fff" opacity="0.95"/>
+<circle cx="2060" cy="1105" r="8"  fill="#475569"/>
+<circle cx="2108" cy="1105" r="8"  fill="#475569"/>
+<circle cx="2065" cy="1100" r="4"  fill="#fff" opacity="0.9"/>
+<circle cx="2113" cy="1100" r="4"  fill="#fff" opacity="0.9"/>
+<!-- Curious / raised eyebrow effect -->
+<path d="M2052,1096 Q2060,1092 2068,1096" fill="none" stroke="#080C18" stroke-width="2.5" stroke-linecap="round"/>
+<rect x="2060" y="1141" width="48" height="11" rx="5.5" fill="#94A3B8" opacity="0.6"/>
+<circle cx="2072" cy="1146" r="3"  fill="#fff" opacity="0.7"/>
+<circle cx="2084" cy="1146" r="3"  fill="#fff" opacity="0.7"/>
+<circle cx="2096" cy="1146" r="3"  fill="#fff" opacity="0.7"/>
+<!-- Badge: speech bubble with ? -->
+<circle cx="2171" cy="1209" r="30" fill="#080C18" opacity="0.9"/>
+<circle cx="2171" cy="1209" r="26" fill="#94A3B8" opacity="0.18"/>
+<rect x="2155" y="1194" width="30" height="24" rx="8" fill="#94A3B8" opacity="0.8"/>
+<polygon points="2158,1218 2163,1226 2169,1218" fill="#94A3B8" opacity="0.8"/>
+<text x="2170" y="1212" font-family="sans-serif" font-size="16" font-weight="900" fill="#080C18" text-anchor="middle">?</text>
+
+<text x="2084" y="1335" font-family="'PingFang TC','Microsoft JhengHei',sans-serif" font-size="84" font-weight="800" fill="#ffffff" text-anchor="middle">說明</text>
+<text x="2084" y="1418" font-family="'PingFang TC','Microsoft JhengHei',sans-serif" font-size="42" fill="#94A3B8" text-anchor="middle" font-weight="700" letter-spacing="3">HELP</text>
+<text x="2084" y="1501" font-family="'PingFang TC','Microsoft JhengHei',sans-serif" font-size="34" fill="#ffffff50" text-anchor="middle">查看使用說明</text>
+<rect x="1984" y="1569" width="200" height="7" rx="3.5" fill="url(#gSlate)" opacity="0.85"/>
+
+</svg>

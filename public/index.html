@@ -1,0 +1,2531 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title id="pageTitle">工時管理</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .header-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, #06C755, #00B548);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+
+    .header-icon.purple { background: linear-gradient(135deg, #9b72cf, #7c3aed); }
+
+    .header h1 { font-size: 20px; color: #1a1a2e; font-weight: 700; }
+    .header p  { font-size: 12px; color: #8a9ab5; margin-top: 2px; }
+
+    /* ── Back button ──────────────────────────── */
+    .btn-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: none; border: none;
+      color: #7c3aed; font-size: 14px; font-weight: 600;
+      cursor: pointer; padding: 0; margin-bottom: 20px;
+    }
+    .btn-back:hover { opacity: 0.75; }
+
+    /* ── History summary header ───────────────── */
+    .history-header-box {
+      background: linear-gradient(135deg, #7c6bc9, #9b72cf);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+      color: #fff;
+    }
+    .history-header-box h2 {
+      font-size: 16px; font-weight: 700; margin-bottom: 4px;
+    }
+    .history-header-box .subtitle {
+      font-size: 12px; color: rgba(255,255,255,0.75); margin-bottom: 12px;
+    }
+    .history-stats {
+      display: flex; gap: 16px;
+    }
+    .history-stat {
+      background: rgba(255,255,255,0.18);
+      border-radius: 10px; padding: 8px 14px;
+      flex: 1; text-align: center;
+    }
+    .history-stat .stat-val {
+      font-size: 20px; font-weight: 800; display: block;
+    }
+    .history-stat .stat-lbl {
+      font-size: 11px; color: rgba(255,255,255,0.8);
+    }
+
+    /* ── Progress bar ────────────────────────── */
+    .progress-track {
+      display: flex; gap: 4px; margin-top: 12px;
+    }
+    .progress-seg {
+      flex: 1; height: 5px; border-radius: 3px;
+      background: rgba(255,255,255,0.3);
+    }
+    .progress-seg.done { background: #ffffff; }
+
+    /* ── History list ─────────────────────────── */
+    .history-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+
+    .history-item {
+      display: flex; align-items: center;
+      padding: 0; cursor: pointer;
+      overflow: hidden;
+    }
+
+    /* Left status bar */
+    .history-item-bar {
+      width: 5px; align-self: stretch; flex-shrink: 0;
+      background: #e2e8f0;
+    }
+    .history-item-bar.filled { background: #52b788; }
+
+    /* Date section */
+    .history-item-date {
+      padding: 12px 14px; flex: 1;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .history-item-date .mmdd {
+      font-size: 15px; font-weight: 700; color: #2d3748;
+      white-space: nowrap;
+    }
+    .history-item-date .mmdd.weekend { color: #c0392b; }
+    .history-item-date .dow {
+      font-size: 12px; color: #a0aec0;
+    }
+
+    /* Right badge */
+    .history-item-right {
+      padding: 12px 14px;
+      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+    }
+    .hi-badge {
+      border-radius: 10px;
+      padding: 5px 12px;
+      text-align: center; line-height: 1.2;
+    }
+    .hi-badge .bv { font-size: 15px; font-weight: 800; display: block; }
+    .hi-badge .bl { font-size: 10px; display: block; }
+    .hi-badge.filled { background: #e9f7ef; }
+    .hi-badge.filled .bv { color: #27ae60; }
+    .hi-badge.filled .bl { color: #52b788; }
+    .hi-badge.empty  { background: #fff0f3; }
+    .hi-badge.empty  .bv { color: #e57373; }
+    .hi-badge.empty  .bl { color: #e57373; }
+
+    .arrow { color: #cbd5e0; font-size: 16px; }
+
+    /* ── Work hour detail items in history ────── */
+    .detail-items {
+      padding: 4px 14px 10px 20px;
+      display: flex; flex-direction: column; gap: 0;
+      border-top: 1px solid #f3f3f5;
+    }
+    .detail-item {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 0;
+      border-bottom: 1px solid #f7f7f9;
+    }
+    .detail-item:last-child { border-bottom: none; }
+    .detail-task  { flex: 1; font-size: 12px; font-weight: 600; color: #2d3748;
+                    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .detail-type  { font-size: 11px; color: #7c3aed; flex-shrink: 0;
+                    background: #f3e8ff; border-radius: 6px; padding: 1px 5px; }
+    .detail-hours { font-size: 12px; font-weight: 700; color: #27ae60;
+                    flex-shrink: 0; min-width: 28px; text-align: right; }
+    .detail-desc  { font-size: 11px; color: #a0aec0; padding: 0 0 4px 0; font-style: italic; }
+    .detail-loading { font-size: 12px; color: #a0aec0; padding: 6px 0; text-align: center; }
+
+    /* history-item-wrapper groups the row + detail section */
+    .history-item-wrapper {
+      border: 1.5px solid #e8e4f0;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .history-item-wrapper:hover { border-color: #9b72cf; box-shadow: 0 2px 8px rgba(124,58,237,0.10); }
+    .history-item-wrapper:active { transform: scale(0.99); }
+
+    /* ── Add new button ───────────────────────── */
+    .btn-new {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #9b72cf, #7c3aed);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-new:hover { opacity: 0.9; }
+
+    /* ── Fill form ────────────────────────────── */
+    .field { margin-bottom: 16px; }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #4a5568;
+      margin-bottom: 6px;
+    }
+    label span.req { color: #e53e3e; margin-left: 2px; }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 15px;
+      color: #2d3748;
+      background: #f7fafc;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: #06C755;
+      box-shadow: 0 0 0 3px rgba(6,199,85,0.15);
+      background: #fff;
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23a0aec0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+
+    textarea { resize: vertical; min-height: 72px; }
+
+    .task-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+
+    .task-entry {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px;
+      background: #f7fafc;
+      position: relative;
+    }
+
+    .task-entry-header {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .task-entry-num {
+      font-size: 12px; font-weight: 700;
+      color: #06C755;
+      background: rgba(6,199,85,0.1);
+      padding: 2px 10px; border-radius: 20px;
+    }
+
+    .task-entry-remove {
+      width: 28px; height: 28px;
+      border: none; background: #fff0f0;
+      color: #e53e3e; border-radius: 8px;
+      font-size: 16px; line-height: 1;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .task-entry-remove:hover { background: #fed7d7; }
+
+    .entry-field { margin-bottom: 10px; }
+    .entry-field:last-child { margin-bottom: 0; }
+    .entry-field label { font-size: 12px; margin-bottom: 5px; }
+    .entry-field input, .entry-field select, .entry-field textarea {
+      font-size: 14px; padding: 10px 12px;
+    }
+    .entry-field textarea { min-height: 60px; }
+
+    .hours-input { display: flex; align-items: center; gap: 8px; }
+    .hours-input input { flex: 1; }
+    .hours-unit { font-size: 14px; color: #718096; white-space: nowrap; flex-shrink: 0; }
+
+    .btn-add {
+      width: 100%; padding: 12px;
+      background: transparent; color: #06C755;
+      border: 1.5px dashed #06C755;
+      border-radius: 10px; font-size: 15px; font-weight: 600;
+      cursor: pointer; margin-bottom: 16px;
+      transition: background 0.2s;
+    }
+    .btn-add:hover { background: rgba(6,199,85,0.06); }
+
+    .existing-notice {
+      display: flex; align-items: center; gap: 10px;
+      background: #fffbeb; border: 1px solid #f6e05e;
+      border-radius: 10px; padding: 10px 14px;
+      margin-bottom: 14px; font-size: 13px; color: #744210;
+    }
+    .existing-notice .icon { font-size: 18px; flex-shrink: 0; }
+    .existing-notice .text { flex: 1; line-height: 1.4; }
+    .existing-notice .text strong { font-size: 15px; }
+
+    .total-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #f0faf4; border: 1px solid #c6f6d5;
+      border-radius: 10px; padding: 10px 16px;
+      margin-bottom: 16px; font-size: 14px; color: #276749;
+    }
+    .total-bar strong { font-size: 18px; }
+
+    .btn {
+      width: 100%; padding: 15px;
+      background: linear-gradient(135deg, #06C755, #00B548);
+      color: #fff; border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn:active  { transform: scale(0.98); opacity: 0.9; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Loading ──────────────────────────────── */
+    .loading-mask {
+      display: none; position: fixed; inset: 0;
+      background: rgba(255,255,255,0.88);
+      z-index: 100; align-items: center; justify-content: center;
+      flex-direction: column; gap: 12px;
+      font-size: 15px; color: #4a5568;
+    }
+    .loading-mask.show { display: flex; }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid #e2e8f0; border-top-color: #06C755;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Toast ────────────────────────────────── */
+    .toast {
+      position: fixed; bottom: 32px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1a1a2e; color: #fff;
+      padding: 12px 24px; border-radius: 24px;
+      font-size: 14px; opacity: 0;
+      transition: all 0.3s ease;
+      pointer-events: none; white-space: nowrap;
+      z-index: 999; max-width: 90vw; text-align: center;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .error-card {
+      background: #fff5f5; border: 1px solid #feb2b2;
+      border-radius: 10px; padding: 16px;
+      color: #c53030; font-size: 14px; line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .divider { border: none; border-top: 1px solid #edf2f7; margin: 20px 0; }
+
+    /* ── Tasks (我的任務) ─────────────────────────────── */
+    .task-card {
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      padding: 14px 16px; margin-bottom: 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .task-header {
+      display: flex; align-items: center; gap: 8px;
+      cursor: pointer;
+    }
+    .task-name {
+      font-weight: 700; font-size: 14px; color: #1e293b;
+      line-height: 1.4; word-break: break-word;
+    }
+    .task-project {
+      font-size: 11px; color: #64748b; margin-top: 4px;
+    }
+    .task-meta {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin-top: 10px;
+    }
+    .task-chip {
+      display: inline-block; font-size: 11px; font-weight: 600;
+      padding: 3px 9px; border-radius: 20px;
+      background: #f1f5f9; color: #475569; white-space: nowrap;
+    }
+    .task-desc {
+      margin-top: 12px; padding: 10px 12px;
+      background: #f8fafc; border-radius: 8px;
+      font-size: 12px; line-height: 1.6; color: #334155;
+    }
+    .task-desc p { margin: 0 0 6px 0; }
+    .task-actions {
+      margin-top: 12px; padding-top: 12px;
+      border-top: 1px solid #f1f5f9;
+    }
+    .task-close-btn, .task-prolong-btn {
+      width: 100%; padding: 10px 14px;
+      color: #fff; border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      margin-top: 8px;
+    }
+    .task-close-btn { background: linear-gradient(135deg, #16a34a, #15803d); }
+    .task-prolong-btn { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .task-close-btn:active, .task-prolong-btn:active { transform: scale(0.98); }
+
+    /* ── Prolong Modal ───────────────────────────────── */
+    .modal-mask {
+      position: fixed; inset: 0; background: rgba(15,23,42,0.55);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1000; padding: 16px;
+    }
+    .modal-box {
+      background: #fff; border-radius: 14px; padding: 20px;
+      width: 100%; max-width: 420px; max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+    }
+    .modal-title { font-size: 17px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
+    .modal-subtitle { font-size: 12px; color: #64748b; margin-bottom: 16px; line-height: 1.6; }
+    .modal-row { margin-bottom: 14px; }
+    .modal-label { display:block; font-size: 13px; color: #334155; font-weight: 600; margin-bottom: 6px; }
+    .modal-row input, .modal-row textarea {
+      width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px;
+      font-size: 14px; color: #1e293b; box-sizing: border-box; font-family: inherit;
+    }
+    .modal-row textarea { resize: vertical; min-height: 60px; }
+    .modal-row-inline { display: flex; gap: 8px; }
+    .modal-row-inline input { flex: 1; }
+    .modal-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .modal-btn {
+      flex: 1; padding: 11px 14px; border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+    }
+    .modal-btn-cancel { background: #f1f5f9; color: #475569; }
+    .modal-btn-submit { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+    .modal-btn:active { transform: scale(0.98); }
+
+    /* ── Meeting Room ────────────────────────────────── */
+    .m-header-box {
+      background: linear-gradient(135deg, #1a73e8, #0d5bd9);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+      color: #fff;
+    }
+    .m-header-box h2 { font-size: 16px; font-weight: 700; }
+    .m-header-box .m-subtitle { font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 3px; }
+
+    .m-tabs {
+      display: flex; gap: 0;
+      background: #f0f4f8;
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 16px;
+    }
+    .m-tab {
+      flex: 1; padding: 9px 0;
+      border: none; background: transparent;
+      color: #718096; font-size: 14px; font-weight: 600;
+      border-radius: 8px; cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .m-tab.active {
+      background: #fff;
+      color: #1a73e8;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Bookings list */
+    .m-date-label {
+      font-size: 13px; font-weight: 700; color: #4a5568;
+      margin-bottom: 10px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .m-bookings-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .mb-item {
+      display: flex; gap: 12px; align-items: flex-start;
+      background: #f7fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    .mb-time {
+      font-size: 13px; font-weight: 700; color: #1a73e8;
+      white-space: nowrap; padding-top: 1px;
+      min-width: 88px;
+    }
+    .mb-info { flex: 1; min-width: 0; }
+    .mb-room {
+      font-size: 13px; font-weight: 700; color: #2d3748;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .mb-topic {
+      font-size: 14px; color: #4a5568; margin-top: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .mb-org { font-size: 12px; color: #a0aec0; margin-top: 3px; }
+
+    /* Book form */
+    .m-form-title {
+      font-size: 14px; font-weight: 700; color: #2d3748; margin-bottom: 14px;
+    }
+    .btn-blue {
+      width: 100%; padding: 15px;
+      background: linear-gradient(135deg, #1a73e8, #0d5bd9);
+      color: #fff; border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-blue:active  { transform: scale(0.98); opacity: 0.9; }
+    .btn-blue:disabled { opacity: 0.5; cursor: not-allowed; }
+    .time-row { display: flex; gap: 10px; }
+    .time-row .field { flex: 1; }
+
+    /* Alternatives panel */
+    .alt-panel {
+      background: #fffbeb; border: 1.5px solid #f6e05e;
+      border-radius: 12px; padding: 14px 16px; margin-top: 14px;
+    }
+    .alt-panel-title {
+      font-size: 13px; font-weight: 700; color: #744210; margin-bottom: 10px;
+    }
+    .alt-room-list { display: flex; flex-direction: column; gap: 6px; }
+    .alt-room-item {
+      display: flex; align-items: center; gap: 10px;
+      background: #fff; border: 1px solid #e2e8f0;
+      border-radius: 10px; padding: 10px 12px;
+      cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .alt-room-item:hover { border-color: #1a73e8; box-shadow: 0 1px 6px rgba(26,115,232,0.12); }
+    .alt-room-icon { font-size: 18px; flex-shrink: 0; }
+    .alt-room-info { flex: 1; min-width: 0; }
+    .alt-room-name { font-size: 14px; font-weight: 700; color: #2d3748; }
+    .alt-room-sub  { font-size: 12px; color: #718096; margin-top: 2px; }
+    .alt-room-cap  { font-size: 12px; color: #a0aec0; flex-shrink: 0; }
+
+    /* ── Attendance page ──────────────────────── */
+    .attend-header-box {
+      background: linear-gradient(135deg, #4a90d9, #2563eb);
+      border-radius: 14px; padding: 18px 20px;
+      margin-bottom: 16px; color: #fff;
+    }
+    .attend-header-box h2 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .attend-header-box .subtitle { font-size: 12px; color: rgba(255,255,255,0.75); }
+
+    .attend-day {
+      background: #fff; border-radius: 14px;
+      border: 1.5px solid #e2e8f0;
+      margin-bottom: 10px; overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .attend-day-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px;
+      background: #f4f7fb;
+    }
+    .attend-date-str {
+      font-size: 14px; font-weight: 700; color: #2d3748;
+    }
+    .attend-date-str.weekend { color: #c0392b; }
+    .attend-dow { font-size: 12px; color: #a0aec0; }
+    .attend-status-badge {
+      margin-left: auto;
+      font-size: 11px; font-weight: 700;
+      border-radius: 20px; padding: 3px 10px;
+    }
+    .attend-status-badge.ok     { background: #d8f3dc; color: #2d6a4f; }
+    .attend-status-badge.half   { background: #fff3cd; color: #856404; }
+    .attend-status-badge.miss   { background: #fce4ec; color: #b71c1c; }
+
+    .attend-punches {
+      display: flex; gap: 0; border-top: 1px solid #f0f4f8;
+    }
+    .attend-punch {
+      flex: 1; padding: 12px 14px; text-align: center;
+      border-right: 1px solid #f0f4f8;
+    }
+    .attend-punch:last-child { border-right: none; }
+    .attend-punch-label {
+      font-size: 11px; font-weight: 700;
+      display: inline-block; border-radius: 20px;
+      padding: 2px 8px; margin-bottom: 6px;
+    }
+    .attend-punch-label.in  { background: #d8f3dc; color: #2d6a4f; }
+    .attend-punch-label.out { background: #fce4ec; color: #b71c1c; }
+    .attend-punch-time {
+      font-size: 20px; font-weight: 800; color: #2d3748;
+    }
+    .attend-punch-time.missing { color: #d0d5dd; font-size: 18px; }
+    .attend-punch-status { font-size: 11px; color: #e17055; margin-top: 2px; }
+
+    .btn-makeup {
+      width: calc(100% - 28px); margin: 0 14px 12px;
+      padding: 10px; border: 1.5px dashed #93c5fd;
+      background: #eff6ff; color: #1e40af;
+      border-radius: 10px; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-makeup:hover { background: #dbeafe; border-color: #60a5fa; }
+    .btn-makeup:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* Makeup modal */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45); z-index: 1000;
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-box {
+      background: #fff; border-radius: 16px;
+      width: calc(100% - 40px); max-width: 400px;
+      padding: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+    .modal-title {
+      font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #1a1a2e;
+    }
+    .modal-footer {
+      display: flex; gap: 10px; margin-top: 16px;
+    }
+    .btn-cancel {
+      flex: 1; padding: 12px; background: #f0f4f8;
+      color: #4a5568; border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    .btn-confirm {
+      flex: 2; padding: 12px; background: linear-gradient(135deg, #4a90d9, #2563eb);
+      color: #fff; border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+    }
+    .btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Leave Apply page ────────────────────────────── */
+    .leave-header-box {
+      background: linear-gradient(135deg, #e879a4, #d63384);
+      border-radius: 14px; padding: 18px 20px;
+      margin-bottom: 16px; color: #fff;
+    }
+    .leave-header-box h2 { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+    .leave-header-box .subtitle { font-size: 12px; color: rgba(255,255,255,0.8); }
+
+    .leave-section-title {
+      font-size: 13px; font-weight: 700; color: #9d174d;
+      margin: 18px 0 10px;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .btn-pink {
+      width: 100%; padding: 15px;
+      background: linear-gradient(135deg, #e879a4, #d63384);
+      color: #fff; border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-pink:active  { transform: scale(0.98); opacity: 0.9; }
+    .btn-pink:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Leave record selection */
+    .leave-record-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .leave-record-item {
+      border: 2px solid #e2e8f0; border-radius: 12px;
+      padding: 12px 14px; cursor: pointer;
+      background: #f7fafc;
+      transition: border-color 0.15s, background 0.15s;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .leave-record-item:hover  { border-color: #d63384; background: #fff; }
+    .leave-record-item.selected {
+      border-color: #d63384; background: #fdf2f8;
+    }
+    .leave-record-item .lri-dot {
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 2px solid #d1d5db; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .leave-record-item.selected .lri-dot {
+      border-color: #d63384; background: #d63384;
+    }
+    .leave-record-item.selected .lri-dot::after {
+      content: ''; width: 7px; height: 7px;
+      border-radius: 50%; background: #fff;
+    }
+    .leave-record-item .lri-info { flex: 1; min-width: 0; }
+    .leave-record-item .lri-name { font-size: 14px; font-weight: 700; color: #2d3748; }
+    .leave-record-item .lri-dates { font-size: 11px; color: #a0aec0; margin-top: 2px; }
+    .leave-record-item .lri-remain {
+      font-size: 14px; font-weight: 800; color: #d63384; flex-shrink: 0;
+    }
+    .leave-record-item .lri-remain span { font-size: 11px; font-weight: 400; color: #a0aec0; }
+
+    .deduct-note {
+      font-size: 12px; color: #718096;
+      background: #f0f9ff; border: 1px solid #bae6fd;
+      border-radius: 8px; padding: 8px 12px;
+      margin-top: 8px;
+    }
+
+    .time-row-2 { display: flex; gap: 10px; }
+    .time-row-2 .field { flex: 1; }
+
+    .hours-calc-box {
+      background: #fdf2f8; border: 1px solid #fbcfe8;
+      border-radius: 10px; padding: 10px 16px;
+      margin-bottom: 16px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .hours-calc-box .hc-label { font-size: 13px; color: #831843; }
+    .hours-calc-box .hc-val   { font-size: 22px; font-weight: 800; color: #d63384; }
+    .hours-calc-box .hc-unit  { font-size: 13px; color: #9d174d; margin-left: 4px; }
+  </style>
+</head>
+<body>
+
+<div class="loading-mask" id="loadingMask">
+  <div class="spinner"></div>
+  <div id="loadingText">載入中...</div>
+</div>
+
+<!-- ── History View ─────────────────────────────────── -->
+<div class="card" id="historyCard" style="display:none">
+
+  <div class="history-header-box" id="historyHeaderBox" style="display:none">
+    <h2>📊 近 7 天工時</h2>
+    <div class="subtitle" id="historySubtitle">載入中...</div>
+    <div class="history-stats">
+      <div class="history-stat">
+        <span class="stat-val" id="historyTotal">0h</span>
+        <span class="stat-lbl">合計工時</span>
+      </div>
+      <div class="history-stat">
+        <span class="stat-val" id="historyFilled">0/7</span>
+        <span class="stat-lbl">已填天數</span>
+      </div>
+    </div>
+    <div class="progress-track" id="historyProgress"></div>
+  </div>
+
+  <div id="historyError"></div>
+
+  <div class="history-list" id="historyList"></div>
+
+  <button class="btn-new" onclick="switchToFill(null)">＋ 填寫今日工時</button>
+</div>
+
+<!-- ── Fill Form ─────────────────────────────────────── -->
+<div class="card" id="mainCard" style="display:none">
+  <button class="btn-back" id="backBtn" style="display:none" onclick="switchToHistory()">← 返回總覽</button>
+
+  <div class="header">
+    <div class="header-icon">📋</div>
+    <div>
+      <h1>填寫工時</h1>
+      <p id="todayLabel">載入中...</p>
+    </div>
+  </div>
+
+  <div id="errorArea"></div>
+
+  <form id="workForm">
+    <div class="field">
+      <label>工作日期 <span class="req">*</span></label>
+      <input type="date" id="workDate" required />
+    </div>
+
+    <hr class="divider" />
+
+    <div id="existingNotice" style="display:none"></div>
+
+    <div class="task-list" id="taskList"></div>
+
+    <button type="button" class="btn-add" id="addTaskBtn">＋ 新增任務</button>
+
+    <div class="total-bar" id="totalBar">
+      <span>合計工時</span>
+      <span><strong id="totalHours">0</strong> 小時</span>
+    </div>
+
+    <button type="submit" class="btn" id="submitBtn">✅ 送出工時</button>
+  </form>
+</div>
+
+<!-- ── Meeting Room Card ──────────────────────────────── -->
+<div class="card" id="meetingCard" style="display:none">
+
+  <div class="m-header-box">
+    <h2>🏢 會議室</h2>
+    <div class="m-subtitle">查詢與預約</div>
+  </div>
+
+  <div id="mError"></div>
+
+  <!-- Tab bar -->
+  <div class="m-tabs">
+    <button class="m-tab active" id="mTabBookings">📋 今日預約</button>
+    <button class="m-tab"        id="mTabBook">＋ 預約會議室</button>
+  </div>
+
+  <!-- Bookings view -->
+  <div id="mBookingsView">
+    <div class="m-date-label">📅 <span id="mBookingsDate"></span></div>
+    <div class="m-bookings-list" id="mBookingsList">
+      <div style="text-align:center;color:#a0aec0;padding:24px;font-size:14px;">載入中...</div>
+    </div>
+  </div>
+
+  <!-- Book form view -->
+  <div id="mBookView" style="display:none">
+    <div class="m-form-title">填寫預約資訊</div>
+    <div id="mBookError"></div>
+
+    <div class="field">
+      <label>會議室 <span class="req">*</span></label>
+      <select id="mRoomSelect">
+        <option value="">載入中...</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>日期 <span class="req">*</span></label>
+      <input type="date" id="mDate" />
+    </div>
+
+    <div class="time-row">
+      <div class="field">
+        <label>開始時間 <span class="req">*</span></label>
+        <select id="mStartTime"></select>
+      </div>
+      <div class="field">
+        <label>結束時間 <span class="req">*</span></label>
+        <select id="mEndTime"></select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>會議主題 <span class="req">*</span></label>
+      <input type="text" id="mTopic" placeholder="請輸入會議主題" maxlength="100" />
+    </div>
+
+    <div class="field">
+      <label>參加人數</label>
+      <input type="number" id="mNumbers" min="0" max="100" value="0" />
+    </div>
+
+    <div class="field">
+      <label>會議內容</label>
+      <textarea id="mContent" placeholder="（選填）" maxlength="500"></textarea>
+    </div>
+
+    <button class="btn-blue" id="mSubmitBtn" onclick="submitMeetingBook()">✅ 確認預約</button>
+  </div>
+
+</div>
+
+<!-- ── Attendance Page ────────────────────────────────── -->
+<div class="card" id="attendanceCard" style="display:none">
+  <div class="attend-header-box">
+    <h2>📋 打卡紀錄</h2>
+    <div class="subtitle" id="attendSubtitle">近 7 天出勤狀況</div>
+  </div>
+  <div id="attendError"></div>
+  <div id="attendList"></div>
+</div>
+
+<!-- 補打卡 Modal -->
+<div class="modal-overlay" id="makeupModal">
+  <div class="modal-box">
+    <div class="modal-title">🕐 補打卡申請</div>
+    <div class="field">
+      <label>補打日期</label>
+      <input type="date" id="makeupDate" readonly />
+    </div>
+    <!-- 上班時間欄：只有缺少上班記錄時才顯示 -->
+    <div class="field" id="makeupInField">
+      <label>🟢 上班時間</label>
+      <input type="time" id="makeupInTime" />
+    </div>
+    <!-- 下班時間欄：只有缺少下班記錄時才顯示 -->
+    <div class="field" id="makeupOutField">
+      <label>🔴 下班時間</label>
+      <input type="time" id="makeupOutTime" />
+    </div>
+    <div class="field">
+      <label>原因</label>
+      <textarea id="makeupReason" rows="2" placeholder="請說明補打卡原因"></textarea>
+    </div>
+    <div id="makeupMsg" style="font-size:13px;color:#e17055;margin-top:4px;display:none"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeMakeupModal()">取消</button>
+      <button class="btn-confirm" id="makeupConfirmBtn" onclick="submitMakeup()">送出申請</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Leave Apply Card ───────────────────────────────── -->
+<div class="card" id="leaveApplyCard" style="display:none">
+
+  <div class="leave-header-box">
+    <h2>📝 請假申請</h2>
+    <div class="subtitle">填寫假別與時間後選擇餘假抵扣</div>
+  </div>
+
+  <div id="leaveApplyError"></div>
+
+  <!-- 假別 -->
+  <div class="field">
+    <label>假別 <span class="req">*</span></label>
+    <select id="laLeaveType">
+      <option value="">載入中...</option>
+    </select>
+  </div>
+
+  <!-- 請假起日 -->
+  <div class="leave-section-title">📅 請假時間</div>
+  <div class="time-row-2">
+    <div class="field">
+      <label>起日 <span class="req">*</span></label>
+      <input type="date" id="laStartDate" />
+    </div>
+    <div class="field">
+      <label>起始時間 <span class="req">*</span></label>
+      <select id="laStartTime"></select>
+    </div>
+  </div>
+  <div class="time-row-2">
+    <div class="field">
+      <label>迄日 <span class="req">*</span></label>
+      <input type="date" id="laEndDate" />
+    </div>
+    <div class="field">
+      <label>結束時間 <span class="req">*</span></label>
+      <select id="laEndTime"></select>
+    </div>
+  </div>
+
+  <!-- 計算時數 -->
+  <div class="hours-calc-box" id="laHoursBox">
+    <span class="hc-label">請假時數</span>
+    <div><span class="hc-val" id="laHoursVal">0</span><span class="hc-unit">小時</span></div>
+  </div>
+
+  <!-- 代理人 -->
+  <div class="field">
+    <label>代理人 <span class="req">*</span></label>
+    <select id="laDeputy">
+      <option value="">載入中...</option>
+    </select>
+  </div>
+
+  <!-- 事由 -->
+  <div class="field">
+    <label>請假事由</label>
+    <textarea id="laReason" rows="2" placeholder="（選填）"></textarea>
+  </div>
+
+  <!-- 餘假抵扣 -->
+  <div class="leave-section-title">🗂 餘假抵扣</div>
+  <div id="laRecordsArea">
+    <div style="color:#a0aec0;font-size:13px;padding:8px 0">
+      請先選擇假別與日期，系統自動載入可用記錄
+    </div>
+  </div>
+
+  <button class="btn-pink" id="laSubmitBtn" onclick="submitLeaveApply()" style="margin-top:16px">
+    ✅ 送出請假申請
+  </button>
+</div>
+
+<!-- ── Leave History Card ─────────────────────────────── -->
+<div class="card" id="leaveHistoryCard" style="display:none">
+  <div class="attend-header-box">
+    <h2>📅 請假紀錄</h2>
+    <div class="subtitle" id="leaveHistorySubtitle">最近 5 筆請假記錄</div>
+  </div>
+  <div id="leaveHistoryError"></div>
+  <div id="leaveHistoryList"></div>
+</div>
+
+<!-- ── Tasks Card (我的任務) ─────────────────────────── -->
+<div class="card" id="tasksCard" style="display:none">
+  <div class="attend-header-box">
+    <h2>✅ 我的任務</h2>
+    <div class="subtitle" id="tasksSubtitle">尚未關閉的任務，依到期日排序</div>
+  </div>
+  <div id="tasksError"></div>
+  <div id="tasksList"></div>
+</div>
+
+<!-- ── Prolong (延時申請) Modal ─────────────────────── -->
+<div class="modal-mask" id="prolongModal">
+  <div class="modal-box">
+    <div class="modal-title">🕒 延時申請</div>
+    <div class="modal-subtitle">
+      任務：<span id="prolongTaskName"></span><br>
+      原到期日：<span id="prolongCurrentDate"></span>
+    </div>
+    <div class="modal-row">
+      <label class="modal-label">新到期日 / 時間 *</label>
+      <div class="modal-row-inline">
+        <input type="date" id="prolongNewDate">
+        <input type="time" id="prolongNewTime" value="23:59" style="max-width:110px">
+      </div>
+    </div>
+    <div class="modal-row">
+      <label class="modal-label">延長時數（小時）*</label>
+      <input type="number" id="prolongHours" min="0.5" step="0.5" value="8">
+    </div>
+    <div class="modal-row">
+      <label class="modal-label">延長原因（選填）</label>
+      <textarea id="prolongReason" placeholder="說明延長原因..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="closeProlongDialog()">取消</button>
+      <button class="modal-btn modal-btn-submit" onclick="submitProlong()">送出申請</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const LIFF_ID  = '1656637613-zuZyrobC';
+  const DOW_NAMES = ['日','一','二','三','四','五','六'];
+  let lineUserId  = '';
+  let formData    = { tasks: [], types: [] };
+  let entryCount  = 0;
+  let isHistoryMode = false;
+  let cameFromHistory = false;
+  let pendingDetail = null;  // detail to pre-fill fill form when opening from history
+
+  function escHtml(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── LIFF init ──────────────────────────────────────────
+  async function initLiff() {
+    const params = new URLSearchParams(location.search);
+    isHistoryMode = params.get('mode') === 'history';
+
+    try {
+      await liff.init({ liffId: LIFF_ID });
+      if (!liff.isLoggedIn()) { liff.login(); return; }
+      const profile = await liff.getProfile();
+      lineUserId = profile.userId;
+    } catch (e) {
+      lineUserId = params.get('userId') || 'test-user';
+    }
+  }
+
+  // ── Date helpers ───────────────────────────────────────
+  function todayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  function setDefaultDate(dateStr) {
+    const d = dateStr || todayStr();
+    document.getElementById('workDate').value = d;
+    document.getElementById('todayLabel').textContent = d.replaceAll('-', '/');
+  }
+
+  // ── History View ───────────────────────────────────────
+  async function loadHistory() {
+    showLoading('載入工時記錄...');
+    try {
+      const res  = await fetch(`/api/econtact/work-hours-history?lineUserId=${encodeURIComponent(lineUserId)}`);
+      const days = await res.json();
+      if (!res.ok) { showHistoryError(days.error || '載入失敗'); return; }
+
+      const total  = days.reduce((s, d) => s + (d.hours || 0), 0);
+      const filled = days.filter(d => d.filled).length;
+
+      // Update header stats
+      document.getElementById('historyTotal').textContent  = `${total.toFixed(1)}h`;
+      document.getElementById('historyFilled').textContent = `${filled}/7`;
+      const oldest = days[days.length - 1];
+      const newest = days[0];
+      document.getElementById('historySubtitle').textContent =
+        (oldest && newest)
+          ? `${oldest.date.slice(5).replace('-','/')} ─ ${newest.date.slice(5).replace('-','/')}`
+          : '近 7 天';
+      document.getElementById('historyHeaderBox').style.display = 'block';
+
+      // Progress dots (oldest → newest, left to right)
+      const progress = document.getElementById('historyProgress');
+      progress.innerHTML = '';
+      days.slice().reverse().forEach(d => {
+        const seg = document.createElement('div');
+        seg.className = 'progress-seg' + (d.filled ? ' done' : '');
+        progress.appendChild(seg);
+      });
+
+      // Build list
+      const list = document.getElementById('historyList');
+      list.innerHTML = '';
+      const dateDetailMap = {};  // cache detail for reuse when clicking
+
+      days.forEach(d => {
+        const dt     = new Date(d.date + 'T12:00:00Z');
+        const mmdd   = d.date.slice(5).replace('-', '/');
+        const dow    = DOW_NAMES[dt.getUTCDay()];
+        const isWE   = dt.getUTCDay() === 0 || dt.getUTCDay() === 6;
+        const isFill = d.filled;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'history-item-wrapper';
+
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        item.innerHTML = `
+          <div class="history-item-bar ${isFill ? 'filled' : ''}"></div>
+          <div class="history-item-date">
+            <span class="mmdd ${isWE ? 'weekend' : ''}">${mmdd}</span>
+            <span class="dow">週${dow}</span>
+          </div>
+          <div class="history-item-right">
+            <div class="hi-badge ${isFill ? 'filled' : 'empty'}">
+              <span class="bv">${isFill ? `${d.hours}h` : '－'}</span>
+              <span class="bl">${isFill ? '已填' : '未填'}</span>
+            </div>
+            <span class="arrow">›</span>
+          </div>`;
+
+        wrapper.appendChild(item);
+
+        // For filled days: show detail section + async load content
+        if (isFill) {
+          const detailDiv = document.createElement('div');
+          detailDiv.className = 'detail-items';
+          detailDiv.id = `detail-${d.date}`;
+          detailDiv.innerHTML = '<div class="detail-loading">載入明細中...</div>';
+          wrapper.appendChild(detailDiv);
+        }
+
+        wrapper.addEventListener('click', () => switchToFill(d.date, dateDetailMap[d.date] || null));
+        list.appendChild(wrapper);
+      });
+
+      // Load detail for all filled days in parallel
+      days.filter(d => d.filled).forEach(d => {
+        fetch(`/api/econtact/work-hours-detail?lineUserId=${encodeURIComponent(lineUserId)}&date=${encodeURIComponent(d.date)}`)
+          .then(r => r.ok ? r.json() : [])
+          .then(items => {
+            dateDetailMap[d.date] = items;
+            const container = document.getElementById(`detail-${d.date}`);
+            if (!container) return;
+            if (!items.length) { container.innerHTML = ''; return; }
+            container.innerHTML = items.map(it => `
+              <div class="detail-item">
+                <span class="detail-task">${escHtml(it.taskName || it.taskId || '未知任務')}</span>
+                <span class="detail-type">${escHtml(it.type)}</span>
+                <span class="detail-hours">${it.hours}h</span>
+              </div>
+              ${it.description ? `<div class="detail-desc">${escHtml(it.description)}</div>` : ''}
+            `).join('');
+          })
+          .catch(() => {
+            const c = document.getElementById(`detail-${d.date}`);
+            if (c) c.innerHTML = '';
+          });
+      });
+    } catch (err) {
+      showHistoryError('網路錯誤，請稍後再試');
+    } finally {
+      hideLoading();
+    }
+  }
+
+  function showHistoryError(msg) {
+    document.getElementById('historyError').innerHTML =
+      `<div class="error-card">⚠️ ${msg}</div>`;
+  }
+
+  // ── Switch between history and fill views ──────────────
+  function switchToFill(dateStr, detail = null) {
+    pendingDetail = detail && detail.length ? detail : null;
+    cameFromHistory = isHistoryMode;
+    document.getElementById('historyCard').style.display = 'none';
+    document.getElementById('mainCard').style.display    = 'block';
+    document.getElementById('backBtn').style.display     = cameFromHistory ? 'inline-flex' : 'none';
+    setDefaultDate(dateStr);
+    checkExistingHours(dateStr || todayStr());
+    if (!formData.tasks.length) {
+      loadFormData();  // applyPendingDetail called inside after tasks load
+    } else {
+      applyPendingDetail();
+    }
+  }
+
+  // ── Apply pending detail to fill form rows ─────────────
+  function applyPendingDetail() {
+    if (!pendingDetail || !pendingDetail.length) { pendingDetail = null; return; }
+    const detail = pendingDetail;
+    pendingDetail = null;
+
+    // Clear existing rows and re-populate from detail
+    document.getElementById('taskList').innerHTML = '';
+    entryCount = 0;
+
+    detail.forEach(item => {
+      addTaskEntry();
+      const rows = document.querySelectorAll('.task-entry');
+      const row  = rows[rows.length - 1];
+
+      // Select task (match by id)
+      if (item.taskId) {
+        const sel = row.querySelector('.entry-task');
+        for (const opt of sel.options) {
+          if (opt.value === item.taskId) { sel.value = item.taskId; break; }
+        }
+      }
+      // Set type
+      if (item.type) row.querySelector('.entry-type').value = item.type;
+      // Set hours
+      if (item.hours) row.querySelector('.entry-hours').value = item.hours;
+      // Set description
+      if (item.description) row.querySelector('.entry-desc').value = item.description;
+    });
+
+    updateTotal();
+  }
+
+  function switchToHistory() {
+    document.getElementById('mainCard').style.display    = 'none';
+    document.getElementById('historyCard').style.display = 'block';
+  }
+
+  // ── Check existing work hours ──────────────────────────
+  async function checkExistingHours(date) {
+    if (!lineUserId || !date) return;
+    const notice = document.getElementById('existingNotice');
+    try {
+      const res  = await fetch(`/api/econtact/work-hours?lineUserId=${encodeURIComponent(lineUserId)}&date=${encodeURIComponent(date)}`);
+      const data = await res.json();
+      if (data.exists && data.totalHours > 0) {
+        notice.style.display = 'block';
+        notice.innerHTML = `
+          <div class="existing-notice">
+            <span class="icon">📝</span>
+            <div class="text">
+              此日期已有工時記錄：<strong>${data.totalHours} 小時</strong><br>
+              <small>送出後將取代原有記錄</small>
+            </div>
+          </div>`;
+      } else {
+        notice.style.display = 'none';
+        notice.innerHTML = '';
+      }
+    } catch (_) {
+      notice.style.display = 'none';
+    }
+  }
+
+  // ── Load form data (tasks + types) ────────────────────
+  async function loadFormData() {
+    showLoading('載入任務清單...');
+    try {
+      const res  = await fetch(`/api/econtact/form-data?lineUserId=${encodeURIComponent(lineUserId)}`);
+      const data = await res.json();
+      if (!res.ok) { showError(data.error || '無法載入表單資料'); return; }
+      formData = data;
+      if (pendingDetail !== null) {
+        applyPendingDetail();  // pre-fill rows from existing work hours
+      } else if (!document.querySelectorAll('.task-entry').length) {
+        addTaskEntry();
+      }
+    } catch (e) {
+      showError('網路錯誤，無法載入表單資料');
+    } finally {
+      hideLoading();
+    }
+  }
+
+  // ── Task entry ─────────────────────────────────────────
+  function buildTaskOptions() {
+    let html = '<option value="">請選擇任務...</option>';
+    if (!formData.tasks?.length) {
+      html += '<option value="" disabled>（目前無可用任務）</option>';
+    } else {
+      formData.tasks.forEach(t => {
+        html += `<option value="${t.id||''}" data-name="${t.name||''}" data-dept="${t.departmentId||''}">${t.name||t.id}</option>`;
+      });
+    }
+    return html;
+  }
+
+  function buildTypeOptions() {
+    const list = (formData.types?.length) ? formData.types
+      : ['拜訪客戶','撰寫文件','專案實施','撰寫規格','產品研發',
+         '系統測試','系統安裝','系統維護','技術評估','簡報',
+         '文件維護','休假','會議','訓練','行政','其他']
+        .map(t => ({ value: t, label: t }));
+    let html = '<option value="">請選擇類型...</option>';
+    list.forEach(t => {
+      html += `<option value="${t.value||''}">${t.label||t.value}</option>`;
+    });
+    return html;
+  }
+
+  function addTaskEntry() {
+    entryCount++;
+    const id  = entryCount;
+    const div = document.createElement('div');
+    div.className = 'task-entry';
+    div.dataset.entryId = id;
+    div.innerHTML = `
+      <div class="task-entry-header">
+        <span class="task-entry-num">任務 ${id}</span>
+        <button type="button" class="task-entry-remove" onclick="removeEntry(${id})">✕</button>
+      </div>
+      <div class="entry-field">
+        <label>任務 <span class="req">*</span></label>
+        <select class="entry-task" required>${buildTaskOptions()}</select>
+      </div>
+      <div class="entry-field">
+        <label>類型 <span class="req">*</span></label>
+        <select class="entry-type" required>${buildTypeOptions()}</select>
+      </div>
+      <div class="entry-field">
+        <label>時數 <span class="req">*</span></label>
+        <div class="hours-input">
+          <input type="number" class="entry-hours" min="0.5" max="24" step="0.5" value="8" required />
+          <span class="hours-unit">小時</span>
+        </div>
+      </div>
+      <div class="entry-field">
+        <label>工作描述</label>
+        <textarea class="entry-desc" placeholder="工作摘要（選填）..." maxlength="1000"></textarea>
+      </div>`;
+    document.getElementById('taskList').appendChild(div);
+    div.querySelector('.entry-hours').addEventListener('input', updateTotal);
+    updateTotal();
+    refreshEntryNumbers();
+  }
+
+  function removeEntry(id) {
+    if (document.querySelectorAll('.task-entry').length <= 1) {
+      showToast('⚠️ 至少需要一筆任務'); return;
+    }
+    document.querySelector(`.task-entry[data-entry-id="${id}"]`)?.remove();
+    updateTotal(); refreshEntryNumbers();
+  }
+
+  function refreshEntryNumbers() {
+    document.querySelectorAll('.task-entry').forEach((el, i) => {
+      el.querySelector('.task-entry-num').textContent = `任務 ${i + 1}`;
+    });
+  }
+
+  function updateTotal() {
+    let total = 0;
+    document.querySelectorAll('.entry-hours').forEach(inp => { total += parseFloat(inp.value) || 0; });
+    document.getElementById('totalHours').textContent = total % 1 === 0 ? total : total.toFixed(1);
+  }
+
+  document.getElementById('addTaskBtn').addEventListener('click', addTaskEntry);
+
+  // ── Submit ─────────────────────────────────────────────
+  document.getElementById('workForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const date    = document.getElementById('workDate').value;
+    const entries = Array.from(document.querySelectorAll('.task-entry'));
+    const btn     = document.getElementById('submitBtn');
+
+    const items = [];
+    for (const entry of entries) {
+      const taskSel  = entry.querySelector('.entry-task');
+      const taskId   = taskSel.value;
+      const selOpt   = taskSel.options[taskSel.selectedIndex];
+      const taskName = selOpt?.dataset?.name  || '';
+      const taskDeptId = selOpt?.dataset?.dept || '';
+      const type     = entry.querySelector('.entry-type').value;
+      const workTime = entry.querySelector('.entry-hours').value;
+      const desc     = entry.querySelector('.entry-desc').value;
+      if (!taskId || !type || !workTime) { showToast('❌ 請填寫所有必填欄位'); return; }
+      items.push({ taskId, taskName, taskDeptId, type, workTime, description: desc });
+    }
+
+    btn.disabled = true; btn.textContent = '送出中...';
+    showLoading('正在提交工時...');
+
+    try {
+      const res  = await fetch('/api/econtact/work-hours-batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lineUserId, date, tasks: items }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        showToast(`✅ ${data.message || '工時已送出'}`);
+        // If came from history, go back after success
+        if (cameFromHistory) {
+          setTimeout(() => { switchToHistory(); loadHistory(); }, 1800);
+        } else {
+          setTimeout(() => { try { liff.closeWindow(); } catch (_) {} }, 2000);
+        }
+      } else {
+        showToast('❌ ' + (data.error || '送出失敗'));
+      }
+    } catch (_) {
+      showToast('❌ 網路錯誤，請稍後再試');
+    } finally {
+      btn.disabled = false; btn.textContent = '✅ 送出工時';
+      hideLoading();
+    }
+  });
+
+  // ── Date change ────────────────────────────────────────
+  document.getElementById('workDate').addEventListener('change', (e) => {
+    checkExistingHours(e.target.value);
+  });
+
+  // ── Helpers ────────────────────────────────────────────
+  function showLoading(msg) {
+    document.getElementById('loadingText').textContent = msg || '處理中...';
+    document.getElementById('loadingMask').classList.add('show');
+  }
+  function hideLoading() { document.getElementById('loadingMask').classList.remove('show'); }
+  function showError(msg) {
+    document.getElementById('errorArea').innerHTML =
+      `<div class="error-card">⚠️ ${msg}<br><small>請確認已設定 e-Contact 帳號（輸入「設定帳號」）</small></div>`;
+    document.getElementById('workForm').style.display = 'none';
+  }
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3500);
+  }
+
+  // ── Boot ───────────────────────────────────────────────
+  (async () => {
+    const params = new URLSearchParams(location.search);
+    const page   = params.get('page');
+
+    await initLiff();
+
+    if (page === 'meeting') {
+      document.title = '會議室預約';
+      document.getElementById('meetingCard').style.display = 'block';
+      await initMeeting();
+    } else if (page === 'attendance') {
+      document.title = '打卡紀錄';
+      document.getElementById('attendanceCard').style.display = 'block';
+      await loadAttendanceRecords();
+    } else if (page === 'leave-apply') {
+      document.title = '請假申請';
+      document.getElementById('leaveApplyCard').style.display = 'block';
+      await initLeaveApply();
+    } else if (page === 'leave-history') {
+      document.title = '請假紀錄';
+      document.getElementById('leaveHistoryCard').style.display = 'block';
+      await initLeaveHistory();
+    } else if (page === 'tasks') {
+      document.title = '我的任務';
+      document.getElementById('tasksCard').style.display = 'block';
+      await initTasks();
+    } else if (isHistoryMode) {
+      document.getElementById('historyCard').style.display = 'block';
+      await loadHistory();
+    } else {
+      document.getElementById('mainCard').style.display = 'block';
+      setDefaultDate(null);
+      await loadFormData();
+      checkExistingHours(document.getElementById('workDate').value);
+    }
+  })();
+
+  // ══════════════════════════════════════════════════════
+  // 打卡紀錄模組（page=attendance）
+  // ══════════════════════════════════════════════════════
+  let makeupTargetDate = '';
+
+  async function loadAttendanceRecords() {
+    showLoading('載入打卡紀錄...');
+    try {
+      // 取近 7 天（包含今天）日期範圍 — 以台北時間為準
+      const todayTW = new Date(Date.now() + 8 * 3600 * 1000); // UTC→UTC+8
+      const days  = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(todayTW);
+        d.setUTCDate(todayTW.getUTCDate() - i);
+        days.push(d.toISOString().slice(0, 10)); // YYYY-MM-DD (台北日期)
+      }
+
+      // 取得近 7 天打卡記錄（/api/attendance?lineUserId=xxx 不帶 month → 最新 20 筆）
+      const res     = await fetch(`/api/attendance?lineUserId=${encodeURIComponent(lineUserId)}`);
+      const records = await res.json();
+      if (!res.ok) {
+        document.getElementById('attendError').innerHTML =
+          `<div class="error-card">⚠️ ${records.error || '載入失敗'}<br><small>請確認已設定 e-Contact 帳號</small></div>`;
+        hideLoading(); return;
+      }
+
+      // 按日期分組 — punch_time 已是台北時間 'YYYY-MM-DD HH:mm'，直接解析，不加時差
+      const dayMap = {};
+      for (const r of records) {
+        if (!r.punch_time) continue;
+        // e-Contact 回傳的時間即台北時間（CST, UTC+8），直接取日期/時間字串
+        const dateKey = r.punch_time.slice(0, 10);       // 'YYYY-MM-DD'
+        const tStr    = r.punch_time.slice(11, 16);      // 'HH:mm'
+        if (!dayMap[dateKey]) dayMap[dateKey] = { in: null, inStatus: '', out: null, outStatus: '' };
+        const entry = dayMap[dateKey];
+        if (r.punch_type === 'clock_in') {
+          if (!entry.in || tStr < entry.in) { entry.in = tStr; entry.inStatus = r.remark || ''; }
+        } else {
+          if (!entry.out || tStr > entry.out) { entry.out = tStr; entry.outStatus = r.remark || ''; }
+        }
+      }
+
+      const DOW = ['日','一','二','三','四','五','六'];
+      const list = document.getElementById('attendList');
+      list.innerHTML = '';
+
+      let presentDays = 0;
+      for (const dateKey of days) {
+        const entry = dayMap[dateKey] || { in: null, inStatus: '', out: null, outStatus: '' };
+        const dt    = new Date(dateKey + 'T12:00:00Z');
+        const mm    = String(dt.getUTCMonth() + 1).padStart(2, '0');
+        const dd    = String(dt.getUTCDate()).padStart(2, '0');
+        const dow   = dt.getUTCDay();
+        const isWE  = dow === 0 || dow === 6;
+        const hasIn  = !!entry.in;
+        const hasOut = !!entry.out;
+        const hasBoth = hasIn && hasOut;
+        const hasNone = !hasIn && !hasOut;
+
+        if (hasBoth) presentDays++;
+
+        // 狀態標籤
+        const statusLabel = hasBoth
+          ? `<span class="attend-status-badge ok">✅ 正常</span>`
+          : hasNone
+            ? (isWE ? `<span class="attend-status-badge" style="background:#f0f4f8;color:#a0aec0">休假</span>`
+                    : `<span class="attend-status-badge miss">⚠️ 無記錄</span>`)
+            : `<span class="attend-status-badge half">⚠️ 不完整</span>`;
+
+        // 時間顯示
+        const inDisplay  = hasIn  ? `<div class="attend-punch-time">${entry.in}</div>${entry.inStatus && entry.inStatus !== '正常' ? `<div class="attend-punch-status">${entry.inStatus}</div>` : ''}` : `<div class="attend-punch-time missing">--:--</div>`;
+        const outDisplay = hasOut ? `<div class="attend-punch-time">${entry.out}</div>${entry.outStatus && entry.outStatus !== '正常' ? `<div class="attend-punch-status">${entry.outStatus}</div>` : ''}` : `<div class="attend-punch-time missing">--:--</div>`;
+
+        // 補打卡按鈕（非假日 + 非今天 + 上下班至少一筆缺漏）
+        const isToday = dateKey === days[0];
+        const canMakeup = !isWE && !hasBoth && !isToday;
+        const makeupBtn = canMakeup
+          ? `<button class="btn-makeup" onclick="openMakeupModal('${dateKey}','${entry.in||''}','${entry.out||''}')">補打卡申請</button>`
+          : '';
+
+        list.innerHTML += `
+          <div class="attend-day">
+            <div class="attend-day-header">
+              <span class="attend-date-str ${isWE ? 'weekend' : ''}">${mm}/${dd}</span>
+              <span class="attend-dow">週${DOW[dow]}</span>
+              ${statusLabel}
+            </div>
+            <div class="attend-punches">
+              <div class="attend-punch">
+                <div><span class="attend-punch-label in">上班</span></div>
+                ${inDisplay}
+              </div>
+              <div class="attend-punch">
+                <div><span class="attend-punch-label out">下班</span></div>
+                ${outDisplay}
+              </div>
+            </div>
+            ${makeupBtn}
+          </div>`;
+      }
+
+      document.getElementById('attendSubtitle').textContent = `近 7 天出勤 · 正常 ${presentDays} 天`;
+    } catch (e) {
+      document.getElementById('attendError').innerHTML = `<div class="error-card">⚠️ 載入失敗：${e.message}</div>`;
+    }
+    hideLoading();
+  }
+
+  function openMakeupModal(dateKey, existingIn, existingOut) {
+    makeupTargetDate = dateKey;
+    document.getElementById('makeupDate').value = dateKey;
+
+    // 只顯示缺少的欄位；已有記錄的欄位直接隱藏，不讓使用者重複送
+    const inField  = document.getElementById('makeupInField');
+    const outField = document.getElementById('makeupOutField');
+    document.getElementById('makeupInTime').value  = '';
+    document.getElementById('makeupOutTime').value = '';
+
+    inField.style.display  = existingIn  ? 'none' : '';
+    outField.style.display = existingOut ? 'none' : '';
+
+    document.getElementById('makeupReason').value = '';
+    document.getElementById('makeupMsg').style.display = 'none';
+    document.getElementById('makeupConfirmBtn').disabled = false;
+    document.getElementById('makeupModal').classList.add('show');
+  }
+
+  function closeMakeupModal() {
+    document.getElementById('makeupModal').classList.remove('show');
+  }
+
+  async function submitMakeup() {
+    const msgEl   = document.getElementById('makeupMsg');
+    const inField  = document.getElementById('makeupInField');
+    const outField = document.getElementById('makeupOutField');
+    // 只取「顯示中」欄位的值，已隱藏的欄位不送
+    const inTime  = inField.style.display  !== 'none' ? document.getElementById('makeupInTime').value  : '';
+    const outTime = outField.style.display !== 'none' ? document.getElementById('makeupOutTime').value : '';
+    const reason  = document.getElementById('makeupReason').value.trim();
+
+    if (!inTime && !outTime) {
+      msgEl.textContent = '請填寫需補打的時間';
+      msgEl.style.display = 'block'; return;
+    }
+    if (!reason) { msgEl.textContent = '請填寫補打卡原因'; msgEl.style.display = 'block'; return; }
+
+    const btn = document.getElementById('makeupConfirmBtn');
+    btn.disabled = true; btn.textContent = '送出中...';
+    msgEl.style.display = 'none';
+
+    try {
+      const jobs = [];
+      if (inTime)  jobs.push({ type: 'clock_in',  time: inTime  });
+      if (outTime) jobs.push({ type: 'clock_out', time: outTime });
+
+      // 依序送出（避免同時登入時 session 衝突）
+      const errors = [];
+      for (const job of jobs) {
+        const res  = await fetch('/api/econtact/makeup-punch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lineUserId, type: job.type, date: makeupTargetDate, time: job.time }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) errors.push(data.error || '送出失敗');
+      }
+      if (errors.length) throw new Error(errors.join('；'));
+
+      closeMakeupModal();
+      await loadAttendanceRecords();
+      const labels = jobs.map(j => j.type === 'clock_in' ? '上班卡' : '下班卡').join('＋');
+      alert(`✅ ${labels}補打卡申請已送出，待主管審核`);
+    } catch (e) {
+      msgEl.textContent = '❌ ' + e.message;
+      msgEl.style.display = 'block';
+      btn.disabled = false; btn.textContent = '送出申請';
+    }
+  }
+
+  // ══════════════════════════════════════════════════════
+  // 會議室模組
+  // ══════════════════════════════════════════════════════
+  let meetingRooms = [];
+  let meetingTab   = 'bookings'; // 'bookings' | 'book'
+
+  async function initMeeting() {
+    showMeetingTab('bookings');
+    await loadMeetingBookings();
+  }
+
+  function showMeetingTab(tab) {
+    meetingTab = tab;
+    document.getElementById('mTabBookings').classList.toggle('active', tab === 'bookings');
+    document.getElementById('mTabBook').classList.toggle('active', tab === 'book');
+    document.getElementById('mBookingsView').style.display = tab === 'bookings' ? 'block' : 'none';
+    document.getElementById('mBookView').style.display     = tab === 'book'     ? 'block' : 'none';
+    if (tab === 'book' && !meetingRooms.length) loadMeetingRooms();
+  }
+
+  async function loadMeetingBookings() {
+    const dateStr = mTodayStr();
+    document.getElementById('mBookingsDate').textContent = dateStr.replace('-', '/').replace('-', '/');
+    showLoading('查詢今日預約...');
+    try {
+      const res  = await fetch(`/api/meeting-room/bookings?lineUserId=${encodeURIComponent(lineUserId)}&date=${dateStr}`);
+      const data = await res.json();
+      if (!res.ok) { renderMeetingError(data.error || '查詢失敗'); return; }
+
+      // Sort by start time
+      data.sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+      const list = document.getElementById('mBookingsList');
+      list.innerHTML = '';
+      if (!data.length) {
+        list.innerHTML = '<div style="text-align:center;color:#a0aec0;padding:24px;font-size:14px;">今日尚無預約</div>';
+        return;
+      }
+      data.forEach(b => {
+        const startHM = b.startTime.slice(11, 16);
+        const endHM   = b.endTime.slice(11, 16);
+        const item = document.createElement('div');
+        item.className = 'mb-item';
+        item.innerHTML = `
+          <div class="mb-time">${startHM}─${endHM}</div>
+          <div class="mb-info">
+            <div class="mb-room">${b.fullName || b.roomName}</div>
+            <div class="mb-topic">${b.topic}</div>
+            <div class="mb-org">👤 ${b.organizer}</div>
+          </div>`;
+        list.appendChild(item);
+      });
+    } catch (err) {
+      renderMeetingError('網路錯誤，請稍後再試');
+    } finally {
+      hideLoading();
+    }
+  }
+
+  async function loadMeetingRooms() {
+    if (meetingRooms.length) return;
+    showLoading('載入會議室清單...');
+    try {
+      const res  = await fetch(`/api/meeting-room/rooms?lineUserId=${encodeURIComponent(lineUserId)}`);
+      const data = await res.json();
+      if (!res.ok) { renderMeetingError(data.error || '載入失敗'); return; }
+      meetingRooms = data;
+      renderRoomSelect();
+    } catch (err) {
+      renderMeetingError('網路錯誤，請稍後再試');
+    } finally {
+      hideLoading();
+    }
+  }
+
+  function nangangRooms() {
+    return meetingRooms.filter(r =>
+      (r.location || '').includes('南港') || (r.fullName || '').includes('南港')
+    );
+  }
+
+  function renderRoomSelect() {
+    const sel = document.getElementById('mRoomSelect');
+    // Only show 南港 A/B/C rooms
+    const rooms = nangangRooms();
+    // Group by floor (A區 / B區 / C區)
+    const groups = {};
+    rooms.forEach(r => {
+      const g = r.floor || r.location || '其他';
+      if (!groups[g]) groups[g] = [];
+      groups[g].push(r);
+    });
+    sel.innerHTML = '<option value="">── 請選擇會議室 ──</option>';
+    Object.entries(groups).sort(([a],[b]) => a.localeCompare(b)).forEach(([floor, rs]) => {
+      const og = document.createElement('optgroup');
+      og.label = floor;
+      rs.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r.id;
+        opt.textContent = `${r.name}（容量 ${r.capacity}）`;
+        opt.dataset.room = JSON.stringify(r);
+        og.appendChild(opt);
+      });
+      sel.appendChild(og);
+    });
+  }
+
+  // Time slot helpers
+  function mTodayStr() {
+    const d = new Date(Date.now() + 8 * 3600 * 1000);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function renderTimeOptions(selId, startH = 8, endH = 22) {
+    const sel = document.getElementById(selId);
+    sel.innerHTML = '';
+    for (let h = startH; h <= endH; h++) {
+      for (const m of ['00', '30']) {
+        if (h === endH && m === '30') break;
+        const val = `${String(h).padStart(2,'0')}:${m}`;
+        sel.innerHTML += `<option value="${val}">${val}</option>`;
+      }
+    }
+  }
+
+  function renderMeetingError(msg) {
+    document.getElementById('mError').innerHTML =
+      `<div class="error-card">⚠️ ${msg}</div>`;
+  }
+
+  // Meeting booking form init
+  function initBookForm() {
+    // Default date = today
+    const today = mTodayStr();
+    document.getElementById('mDate').value = today;
+
+    // Time selects
+    renderTimeOptions('mStartTime', 8, 21);
+    renderTimeOptions('mEndTime',   8, 22);
+    document.getElementById('mStartTime').value = '09:00';
+    document.getElementById('mEndTime').value   = '10:00';
+  }
+
+  async function submitMeetingBook() {
+    const roomSel = document.getElementById('mRoomSelect');
+    const roomId  = roomSel.value;
+    const roomOpt = roomSel.querySelector(`option[value="${roomId}"]`);
+    const room    = roomOpt ? JSON.parse(roomOpt.dataset.room) : null;
+
+    const date      = document.getElementById('mDate').value;
+    const startTime = document.getElementById('mStartTime').value;
+    const endTime   = document.getElementById('mEndTime').value;
+    const topic     = document.getElementById('mTopic').value.trim();
+    const numbers   = document.getElementById('mNumbers').value || '0';
+    const content   = document.getElementById('mContent').value.trim();
+
+    if (!roomId || !room)     { showToast('⚠️ 請選擇會議室'); return; }
+    if (!topic)               { showToast('⚠️ 請輸入會議主題'); return; }
+    if (startTime >= endTime) { showToast('⚠️ 開始時間須早於結束時間'); return; }
+
+    const booking = {
+      roomId:        room.id,
+      roomFullName:  room.fullName,
+      locationCode:  room.locationCode,
+      floorCode:     room.floorCode,
+      roomNumber:    room.roomNumber,
+      locationName:  room.location,
+      floorName:     room.floor,
+      roomName:      room.name,
+      devices:       room.devices || null,
+      topic,
+      startDateTime: `${date} ${startTime}`,
+      endDateTime:   `${date} ${endTime}`,
+      numbers:       parseInt(numbers) || 0,
+      content,
+    };
+
+    const btn = document.getElementById('mSubmitBtn');
+    btn.disabled = true; btn.textContent = '⏳ 送出中...';
+    showLoading('正在預約...');
+    try {
+      const res  = await fetch('/api/meeting-room/book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lineUserId, booking }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showToast(`❌ ${data.error || '預約失敗'}`);
+        const errDiv = document.getElementById('mBookError');
+        errDiv.innerHTML = `<div class="error-card">❌ ${data.error || '預約失敗'}</div>`;
+
+        // If it's a time-slot conflict, search for alternatives via server
+        if (data.conflict) {
+          errDiv.innerHTML += '<div style="font-size:13px;color:#718096;padding:4px 0 6px;">正在搜尋可用時段…</div>';
+          hideLoading();
+          showLoading('搜尋可用時段...');
+          try {
+            const avRes  = await fetch(`/api/meeting-room/availability?lineUserId=${encodeURIComponent(lineUserId)}&date=${date}&start=${startTime}&end=${endTime}`);
+            const avData = avRes.ok ? await avRes.json() : null;
+            errDiv.innerHTML = `<div class="error-card">❌ ${data.error || '預約失敗'}</div>`;
+            if (avData) renderAlternatives(errDiv, avData, date, startTime, endTime);
+          } catch (_) { /* ignore */ }
+        }
+        return;
+      }
+
+      document.getElementById('mBookError').innerHTML = '';
+      showToast('✅ 預約成功！');
+      showMeetingTab('bookings');
+      await loadMeetingBookings();
+    } catch (err) {
+      showToast('❌ 網路錯誤，請稍後再試');
+    } finally {
+      btn.disabled = false; btn.textContent = '✅ 確認預約';
+      hideLoading();
+    }
+  }
+
+  // ── Render alternatives panel ──────────────────────────
+  // avData: { sameSlot: [room,...], nextSlot: { start, end, rooms: [room,...] } | null }
+  function renderAlternatives(container, avData, date, origStart, origEnd) {
+    const { sameSlot, nextSlot } = avData;
+
+    function makePanel(titleHtml, rooms, slotStart, slotEnd) {
+      const panel = document.createElement('div');
+      panel.className = 'alt-panel';
+      panel.innerHTML = `<div class="alt-panel-title">${titleHtml}</div><div class="alt-room-list"></div>`;
+      container.appendChild(panel);
+      const list = panel.querySelector('.alt-room-list');
+      rooms.forEach(room => {
+        const item = document.createElement('div');
+        item.className = 'alt-room-item';
+        item.innerHTML = `
+          <div class="alt-room-icon">🏢</div>
+          <div class="alt-room-info">
+            <div class="alt-room-name">${room.name}</div>
+            <div class="alt-room-sub">${room.floor || room.location || ''}</div>
+          </div>
+          <div class="alt-room-cap">容量 ${room.capacity}</div>`;
+        item.addEventListener('click', () => {
+          const sel = document.getElementById('mRoomSelect');
+          for (const opt of sel.options) {
+            if (opt.value === room.id) { sel.value = room.id; break; }
+          }
+          document.getElementById('mDate').value      = date;
+          document.getElementById('mStartTime').value = slotStart;
+          document.getElementById('mEndTime').value   = slotEnd;
+          document.getElementById('mBookError').innerHTML = '';
+          document.getElementById('mSubmitBtn').scrollIntoView({ behavior: 'smooth' });
+          showToast(`已選擇 ${room.name} ${slotStart}–${slotEnd}`);
+        });
+        list.appendChild(item);
+      });
+    }
+
+    if (sameSlot && sameSlot.length) {
+      makePanel(`✅ 以下會議室在 ${origStart}–${origEnd} 可預約：`, sameSlot, origStart, origEnd);
+    } else if (nextSlot && nextSlot.rooms.length) {
+      makePanel(`⏰ 最近可預約時段：${nextSlot.start}–${nextSlot.end}`, nextSlot.rooms, nextSlot.start, nextSlot.end);
+    } else {
+      container.innerHTML += `<div class="alt-panel"><div class="alt-panel-title">😔 今日已無可用時段</div></div>`;
+    }
+  }
+
+  // Init book form when tab is clicked
+  document.getElementById('mTabBook').addEventListener('click', () => {
+    showMeetingTab('book');
+    initBookForm();
+  });
+  document.getElementById('mTabBookings').addEventListener('click', () => {
+    showMeetingTab('bookings');
+  });
+
+  // ══════════════════════════════════════════════════════
+  // 請假申請模組（page=leave-apply）
+  // ══════════════════════════════════════════════════════
+  let leaveFormData = { leaveTypes: [], deputies: [], deptId: '', deptName: '', yearFakeHour: 0 };
+  let leaveAvailRecords = [];  // available records for current date range
+  let selectedLeaveRecordId = null;
+
+  // ─── 假別代碼 → 中文名稱對應表 ─────────────────────
+  const LEAVE_NAME_MAP = {
+    'Personal Leave': '事假', 'Sick Leave': '病假',
+    'Inductrial injury Leave': '公傷假', 'Offical Leave': '公假',
+    'Marriage Leave': '婚假', 'Maternity Leave': '產假',
+    'Paternity Leave': '產檢假', 'Annual Leave': '特休',
+    'Compensatory Leave': '補休', 'Funeral Leave': '喪假',
+    'Family care Leave': '家庭照顧假', 'Home Leave': '返台假',
+    'Honor Leave': '榮譽假', 'Seized Leave': '陪產檢及陪產假',
+    'Physiological Leave': '生理假', 'Birthday Leave': '生日假',
+    '防疫照顧假': '防疫照顧假', '疫苗接種假': '疫苗接種假',
+    '防疫隔離假(公假)': '防疫隔離假(公假)', '防疫隔離假': '防疫隔離假',
+    'zg': '志工假', '無薪病假': '無薪病假', '有薪病假': '全薪病假',
+    '小一新生入學假': '小一新生入學假',
+  };
+  function leaveCodeToName(code) {
+    return LEAVE_NAME_MAP[code] || code;
+  }
+
+  async function initLeaveApply() {
+    showLoading('載入請假表單...');
+    try {
+      const res  = await fetch(`/api/econtact/leave-form-data?lineUserId=${encodeURIComponent(lineUserId)}`);
+      const data = await res.json();
+      if (!res.ok) {
+        document.getElementById('leaveApplyError').innerHTML =
+          `<div class="error-card">⚠️ ${data.error || '載入失敗'}<br><small>請確認已設定 e-Contact 帳號</small></div>`;
+        return;
+      }
+      leaveFormData = data;
+
+      // 填入假別選項
+      const typeSel = document.getElementById('laLeaveType');
+      typeSel.innerHTML = '<option value="">── 請選擇假別 ──</option>';
+      data.leaveTypes.forEach(lt => {
+        typeSel.innerHTML += `<option value="${lt.code}" data-name="${lt.name}" data-remaining="${lt.remaining}">${lt.name}（剩 ${Number(lt.remaining).toFixed(1)}h）</option>`;
+      });
+
+      // 填入代理人選項
+      const depSel = document.getElementById('laDeputy');
+      depSel.innerHTML = '<option value="">── 請選擇代理人 ──</option>';
+      data.deputies.forEach(d => {
+        depSel.innerHTML += `<option value="${d.value}" data-name="${d.text}">${d.text}</option>`;
+      });
+
+      // 預設日期 = 今天（台北時間）
+      const today = mTodayStr();
+      document.getElementById('laStartDate').value = today;
+      document.getElementById('laEndDate').value   = today;
+
+      // 填入時間選項
+      laRenderTimeOptions('laStartTime', 8, 22);
+      laRenderTimeOptions('laEndTime',   8, 22);
+      document.getElementById('laStartTime').value = '09:00';
+      document.getElementById('laEndTime').value   = '18:00';
+
+      // 計算初始時數
+      laUpdateHours();
+
+      // 事件監聽：日期/時間變動 → 重新計算時數 + 重新載入餘假記錄
+      ['laStartDate','laEndDate','laStartTime','laEndTime'].forEach(id => {
+        document.getElementById(id).addEventListener('change', () => {
+          laUpdateHours();
+          laLoadAvailRecords();
+        });
+      });
+      document.getElementById('laLeaveType').addEventListener('change', laLoadAvailRecords);
+
+    } catch (err) {
+      document.getElementById('leaveApplyError').innerHTML =
+        `<div class="error-card">⚠️ 載入失敗：${err.message}</div>`;
+    } finally {
+      hideLoading();
+    }
+  }
+
+  function laRenderTimeOptions(selId, startH = 8, endH = 22) {
+    const sel = document.getElementById(selId);
+    sel.innerHTML = '';
+    for (let h = startH; h <= endH; h++) {
+      for (const m of ['00', '30']) {
+        if (h === endH && m === '30') break;
+        const val = `${String(h).padStart(2,'0')}:${m}`;
+        sel.innerHTML += `<option value="${val}">${val}</option>`;
+      }
+    }
+  }
+
+  function laCalcHours(startDate, startTime, endDate, endTime) {
+    if (!startDate || !startTime || !endDate || !endTime) return 0;
+    const s = new Date(`${startDate}T${startTime}:00`);
+    const e = new Date(`${endDate}T${endTime}:00`);
+    if (e <= s) return 0;
+    let mins = (e - s) / 60000;
+    // Deduct 1h lunch break per day if span covers 12:00–13:00
+    const days = Math.floor((e - s) / 86400000) + 1;
+    for (let i = 0; i < days; i++) {
+      const dayStart = new Date(s);
+      dayStart.setDate(dayStart.getDate() + i);
+      dayStart.setHours(12, 0, 0, 0);
+      const dayEnd = new Date(dayStart);
+      dayEnd.setHours(13, 0, 0, 0);
+      const sCheck = (i === 0) ? s : new Date(s.getFullYear(), s.getMonth(), s.getDate() + i, 0, 0);
+      const eCheck = (i === days - 1) ? e : new Date(e.getFullYear(), e.getMonth(), e.getDate() - (days - 1 - i), 23, 59);
+      if (sCheck <= dayStart && eCheck >= dayEnd) mins -= 60;
+    }
+    return Math.max(0, mins / 60);
+  }
+
+  function laUpdateHours() {
+    const sd = document.getElementById('laStartDate').value;
+    const st = document.getElementById('laStartTime').value;
+    const ed = document.getElementById('laEndDate').value;
+    const et = document.getElementById('laEndTime').value;
+    const h  = laCalcHours(sd, st, ed, et);
+    document.getElementById('laHoursVal').textContent = h % 1 === 0 ? h : h.toFixed(1);
+  }
+
+  let _laLoadTimer = null;
+  function laLoadAvailRecords() {
+    clearTimeout(_laLoadTimer);
+    _laLoadTimer = setTimeout(_laDoLoadAvailRecords, 600);
+  }
+
+  async function _laDoLoadAvailRecords() {
+    const startDate = document.getElementById('laStartDate').value;
+    const endDate   = document.getElementById('laEndDate').value;
+    const leaveCode = document.getElementById('laLeaveType').value;
+    const area      = document.getElementById('laRecordsArea');
+
+    if (!startDate || !endDate || !leaveCode) {
+      area.innerHTML = '<div style="color:#a0aec0;font-size:13px;padding:8px 0">請先選擇假別與日期</div>';
+      return;
+    }
+
+    area.innerHTML = '<div style="color:#a0aec0;font-size:13px;padding:8px 0">⏳ 載入可用餘假記錄...</div>';
+    selectedLeaveRecordId = null;
+
+    try {
+      const res  = await fetch(`/api/econtact/available-leave-records?lineUserId=${encodeURIComponent(lineUserId)}&startDate=${startDate}&endDate=${endDate}`);
+      const recs = await res.json();
+      if (!res.ok) { area.innerHTML = `<div class="error-card">⚠️ ${recs.error || '查詢失敗'}</div>`; return; }
+
+      // Filter by selected leave type (code)
+      leaveAvailRecords = recs.filter(r => r.code === leaveCode);
+
+      if (!leaveAvailRecords.length) {
+        area.innerHTML = `<div style="color:#e17055;font-size:13px;padding:8px 0">⚠️ 此期間無可用的「${leaveCodeToName(leaveCode)}」餘假記錄</div>`;
+        return;
+      }
+
+      // Auto-select first record
+      selectedLeaveRecordId = leaveAvailRecords[0].id;
+      laRenderLeaveRecords();
+    } catch (err) {
+      area.innerHTML = `<div class="error-card">⚠️ 查詢失敗：${err.message}</div>`;
+    }
+  }
+
+  function laRenderLeaveRecords() {
+    const area = document.getElementById('laRecordsArea');
+    if (!leaveAvailRecords.length) { area.innerHTML = ''; return; }
+
+    const totalHours = parseFloat(document.getElementById('laHoursVal').textContent) || 0;
+
+    let html = '<div class="leave-record-list">';
+    leaveAvailRecords.forEach(rec => {
+      const isSelected = rec.id === selectedLeaveRecordId;
+      const startMM = rec.startDate ? rec.startDate.slice(5, 10).replace('-', '/') : '';
+      const expiryMM = rec.expiryDate ? rec.expiryDate.slice(5, 10).replace('-', '/') : '';
+      html += `
+        <div class="leave-record-item ${isSelected ? 'selected' : ''}"
+             onclick="laSelectRecord('${rec.id}')">
+          <div class="lri-dot"></div>
+          <div class="lri-info">
+            <div class="lri-name">${rec.name}</div>
+            <div class="lri-dates">有效期：${startMM} ～ ${expiryMM}</div>
+          </div>
+          <div class="lri-remain">${Number(rec.remaining).toFixed(1)}<span> h 可用</span></div>
+        </div>`;
+    });
+    html += '</div>';
+
+    if (selectedLeaveRecordId && totalHours > 0) {
+      html += `<div class="deduct-note">本次將扣除 <strong>${totalHours % 1 === 0 ? totalHours : totalHours.toFixed(1)} 小時</strong></div>`;
+    }
+    area.innerHTML = html;
+  }
+
+  function laSelectRecord(id) {
+    selectedLeaveRecordId = id;
+    laRenderLeaveRecords();
+  }
+
+  async function submitLeaveApply() {
+    const leaveCode = document.getElementById('laLeaveType').value;
+    const startDate = document.getElementById('laStartDate').value;
+    const startTime = document.getElementById('laStartTime').value;
+    const endDate   = document.getElementById('laEndDate').value;
+    const endTime   = document.getElementById('laEndTime').value;
+    const totalHours = parseFloat(document.getElementById('laHoursVal').textContent) || 0;
+    const deputySel = document.getElementById('laDeputy');
+    const deputyId  = deputySel.value;
+    const deputyName = deputySel.options[deputySel.selectedIndex]?.dataset?.name ||
+                       deputySel.options[deputySel.selectedIndex]?.text || '';
+    const reason    = document.getElementById('laReason').value.trim();
+    const errDiv    = document.getElementById('leaveApplyError');
+
+    errDiv.innerHTML = '';
+
+    if (!leaveCode)   { errDiv.innerHTML = '<div class="error-card">⚠️ 請選擇假別</div>'; return; }
+    if (!startDate || !endDate) { errDiv.innerHTML = '<div class="error-card">⚠️ 請選擇請假日期</div>'; return; }
+    if (totalHours <= 0) { errDiv.innerHTML = '<div class="error-card">⚠️ 請假時數必須大於 0</div>'; return; }
+    if (!deputyId) { errDiv.innerHTML = '<div class="error-card">⚠️ 請選擇代理人</div>'; return; }
+    if (!selectedLeaveRecordId) { errDiv.innerHTML = '<div class="error-card">⚠️ 請選擇餘假抵扣記錄</div>'; return; }
+
+    const rec = leaveAvailRecords.find(r => r.id === selectedLeaveRecordId);
+    if (!rec) { errDiv.innerHTML = '<div class="error-card">⚠️ 餘假記錄不存在，請重新選擇</div>'; return; }
+    if (totalHours > rec.remaining) {
+      errDiv.innerHTML = `<div class="error-card">⚠️ 請假時數（${totalHours}h）超過餘假剩餘（${rec.remaining.toFixed(1)}h）</div>`;
+      return;
+    }
+
+    const slaveEntities = [{
+      FLeaveProvidedId:    rec.id,
+      'FLeaveProvidedId$': rec.name,
+      FStartDate:          rec.startDate.slice(0, 16),
+      FExpiryDate:         rec.expiryDate.slice(0, 16),
+      FRemainHour:         String(Number(rec.remaining).toFixed(1)),
+      FDeductHour:         String(Number(totalHours).toFixed(1)),
+      FIndex:              1,
+    }];
+
+    const btn = document.getElementById('laSubmitBtn');
+    btn.disabled = true; btn.textContent = '⏳ 送出中...';
+    showLoading('正在送出請假申請...');
+
+    try {
+      const res  = await fetch('/api/econtact/leave-apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lineUserId,
+          leaveType:     leaveCode,
+          startDateTime: `${startDate} ${startTime}`,
+          endDateTime:   `${endDate} ${endTime}`,
+          totalHour:     totalHours,
+          deputyId,
+          deputyName,
+          deptId:        leaveFormData.deptId   || '',
+          deptName:      leaveFormData.deptName || '',
+          reason,
+          yearFakeHour:  leaveFormData.yearFakeHour || 0,
+          slaveEntities,
+        }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        showToast('✅ 請假申請已送出，待主管審核');
+        setTimeout(() => { try { liff.closeWindow(); } catch (_) {} }, 2200);
+      } else {
+        errDiv.innerHTML = `<div class="error-card">❌ ${data.error || '送出失敗'}</div>`;
+      }
+    } catch (err) {
+      errDiv.innerHTML = `<div class="error-card">❌ 網路錯誤：${err.message}</div>`;
+    } finally {
+      btn.disabled = false; btn.textContent = '✅ 送出請假申請';
+      hideLoading();
+    }
+  }
+
+  // ══════════════════════════════════════════════════════
+  // 請假紀錄模組（page=leave-history）
+  // ══════════════════════════════════════════════════════
+  const STATUS_COLORS = {
+    '請假審核通過': { bg: '#d1fae5', text: '#065f46' },
+    '審核通過':     { bg: '#d1fae5', text: '#065f46' },
+    '待主管審核':   { bg: '#fef3c7', text: '#92400e' },
+    '新增':         { bg: '#fef3c7', text: '#92400e' },
+    '已撤銷':       { bg: '#fee2e2', text: '#991b1b' },
+    '退件':         { bg: '#fee2e2', text: '#991b1b' },
+  };
+
+  const LEAVE_TYPE_ICONS = {
+    '特休': '🏖️', '病假': '🏥', '事假': '📋', '婚假': '💍',
+    '喪假': '🕯️', '公假': '🏛️', '補休': '🔄', '生日假': '🎂',
+    '志工假': '🤝', '生理假': '🌸', '家庭照顧假': '👨‍👩‍👧',
+  };
+
+  function leaveTypeIcon(name) {
+    for (const [k, v] of Object.entries(LEAVE_TYPE_ICONS)) {
+      if (name.includes(k)) return v;
+    }
+    return '📄';
+  }
+
+  async function initLeaveHistory() {
+    const errDiv  = document.getElementById('leaveHistoryError');
+    const listDiv = document.getElementById('leaveHistoryList');
+
+    if (!lineUserId) {
+      errDiv.innerHTML = `<div class="error-card">⚠️ 無法取得用戶資訊，請重新開啟頁面。</div>`;
+      return;
+    }
+
+    showLoading('載入請假紀錄...');
+    try {
+      const res  = await fetch(`/api/econtact/leave-history?lineUserId=${encodeURIComponent(lineUserId)}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        errDiv.innerHTML = `<div class="error-card">⚠️ ${data.error || '查詢失敗'}</div>`;
+        return;
+      }
+
+      if (!data.length) {
+        listDiv.innerHTML = `
+          <div style="text-align:center;padding:32px 0;color:#94a3b8">
+            <div style="font-size:36px;margin-bottom:8px">📭</div>
+            <div style="font-size:14px">目前無請假紀錄</div>
+          </div>`;
+        document.getElementById('leaveHistorySubtitle').textContent = '近 30 天請假記錄（共 0 筆）';
+        return;
+      }
+
+      document.getElementById('leaveHistorySubtitle').textContent =
+        `最近 ${data.length} 筆請假記錄`;
+
+      listDiv.innerHTML = data.map(rec => {
+        const sc  = STATUS_COLORS[rec.status] || { bg: '#f1f5f9', text: '#475569' };
+        const ico = leaveTypeIcon(rec.leaveType);
+        // Format dates: "2026-03-27 09:00" → "3/27 09:00"
+        const fmt = s => s ? s.replace(/^\d{4}-0?/, '').replace(/-0?/, '/') : '';
+        const hrs = Number(rec.totalHour);
+        const hrsLabel = hrs % 1 === 0 ? `${hrs}h` : `${hrs}h`;
+
+        return `
+        <div style="border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;margin-bottom:10px;background:#fff">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:20px">${ico}</span>
+            <span style="font-weight:700;font-size:15px;color:#1e293b;flex:1">${rec.leaveType}</span>
+            <span style="background:${sc.bg};color:${sc.text};font-size:11px;font-weight:600;
+                         padding:3px 10px;border-radius:20px;white-space:nowrap">${rec.status}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;color:#64748b;font-size:12px;margin-bottom:4px">
+            <span>📅</span>
+            <span>${fmt(rec.startDate)} ～ ${fmt(rec.endDate)}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;color:#64748b;font-size:12px">
+            <span>⏱</span>
+            <span>共 <strong style="color:#0c4a6e">${hrsLabel}</strong></span>
+            ${rec.serialNo ? `<span style="margin-left:auto;font-size:10px;color:#94a3b8">${rec.serialNo}</span>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+    } catch (err) {
+      errDiv.innerHTML = `<div class="error-card">❌ 網路錯誤：${err.message}</div>`;
+    } finally {
+      hideLoading();
+    }
+  }
+
+  // ══════════════════════════════════════════════════════
+  // 我的任務模組（page=tasks）
+  // ══════════════════════════════════════════════════════
+  function taskDueLabel(t) {
+    if (!t.predictEndDate) return { text: '無到期日', bg: '#f1f5f9', color: '#64748b' };
+    const date = t.predictEndDate.slice(0, 10);
+    if (t.isOverdue) {
+      const overDays = Math.abs(t.daysUntilDue);
+      return { text: `已過期 ${overDays} 天`, bg: '#fee2e2', color: '#991b1b', date };
+    }
+    if (t.daysUntilDue === 0) return { text: '今日到期', bg: '#fef3c7', color: '#92400e', date };
+    if (t.daysUntilDue <= 3) return { text: `${t.daysUntilDue} 天後到期`, bg: '#fed7aa', color: '#9a3412', date };
+    if (t.daysUntilDue <= 7) return { text: `${t.daysUntilDue} 天後到期`, bg: '#fef3c7', color: '#92400e', date };
+    return { text: `${t.daysUntilDue} 天後到期`, bg: '#e0f2fe', color: '#0c4a6e', date };
+  }
+
+  // Status code → color mapping (16 statuses from TsDictionaryItem)
+  const TASK_STATUS_COLORS = {
+    'New':             { bg: '#e0e7ff', color: '#3730a3' },  // 新增
+    'Assigned':        { bg: '#e0e7ff', color: '#3730a3' },  // 已分配
+    'UnAssigned':      { bg: '#f1f5f9', color: '#475569' },  // 未分配
+    'Executing':       { bg: '#dbeafe', color: '#1e40af' },  // 執行中 ✅可操作
+    'Auditing':        { bg: '#fef3c7', color: '#92400e' },  // 審核中
+    'Back':            { bg: '#fee2e2', color: '#991b1b' },  // 返回修改中
+    'Finished':        { bg: '#d1fae5', color: '#065f46' },  // 已關閉
+    'Discarded':       { bg: '#f1f5f9', color: '#475569' },  // 已作廢
+    'Cancel':          { bg: '#f1f5f9', color: '#475569' },  // 取消
+    'Revising':        { bg: '#fef3c7', color: '#92400e' },  // 修訂中
+    'AutoUpgrade':     { bg: '#fef3c7', color: '#92400e' },  // 自動升級中
+    'Prolong':         { bg: '#fed7aa', color: '#9a3412' },  // 延時申請中
+    'Overdue':         { bg: '#fecaca', color: '#7f1d1d' },  // 逾時執行中 ✅可操作
+    'OverdueUpgrade':  { bg: '#fecaca', color: '#7f1d1d' },  // 逾時自動升級中
+    'OverdueDelay':    { bg: '#fed7aa', color: '#9a3412' },  // 逾時延時申請中
+    'FinishAuditing':  { bg: '#fef3c7', color: '#92400e' },  // 關閉審核中
+  };
+
+  function renderTaskCard(t) {
+    const due = taskDueLabel(t);
+    const descHtml = t.description
+      ? `<div class="task-desc" id="desc-${t.id}" style="display:none">${t.description}</div>`
+      : '';
+    const progressHtml = t.progress ? `進度 ${t.progress}%` : '';
+    const priorityHtml = t.priority ? `<span class="task-chip">${escHtml(t.priority)}</span>` : '';
+
+    const statusColor = TASK_STATUS_COLORS[t.statusCode] || { bg: '#f1f5f9', color: '#475569' };
+    const statusHtml  = t.status
+      ? `<span class="task-chip" style="background:${statusColor.bg};color:${statusColor.color}">📍 ${escHtml(t.status)}</span>`
+      : '';
+
+    // 僅「執行中(Executing)」和「逾時執行中(Overdue)」可操作結案/延時申請
+    const canAct = t.statusCode === 'Executing' || t.statusCode === 'Overdue';
+    const closeBtnHtml = canAct
+      ? `<button class="task-close-btn" onclick="confirmCloseTask('${t.id}', '${escHtml(t.name).replace(/'/g, '&apos;')}')">
+           ✅ 送出結案審核
+         </button>`
+      : `<button class="task-close-btn" disabled style="background:#cbd5e1;cursor:not-allowed">
+           🔒 ${escHtml(t.status)}，無法操作
+         </button>`;
+
+    const prolongBtnHtml = canAct
+      ? `<button class="task-prolong-btn" onclick="openProlongDialog('${t.id}', '${escHtml(t.statusCode).replace(/'/g, '&apos;')}', '${escHtml(t.name).replace(/'/g, '&apos;')}', '${escHtml((t.predictEndDate||'').slice(0,16)).replace(/'/g, '&apos;')}')">
+           🕒 延時申請
+         </button>`
+      : '';
+
+    return `
+      <div class="task-card" data-task-id="${t.id}">
+        <div class="task-header" onclick="toggleTaskDetail('${t.id}')">
+          <div style="flex:1;min-width:0">
+            <div class="task-name">${escHtml(t.name)}</div>
+            ${t.project ? `<div class="task-project">📁 ${escHtml(t.project)}</div>` : ''}
+          </div>
+          <span style="font-size:18px;color:#94a3b8;flex-shrink:0">▾</span>
+        </div>
+        <div class="task-meta">
+          ${statusHtml}
+          <span class="task-chip" style="background:${due.bg};color:${due.color}">
+            ⏰ ${due.text}${due.date ? ' · ' + due.date.replace(/^\d{4}-0?/, '').replace(/-0?/, '/') : ''}
+          </span>
+          ${priorityHtml}
+          ${progressHtml ? `<span class="task-chip">${progressHtml}</span>` : ''}
+          ${t.predictHour ? `<span class="task-chip">⏱ ${t.predictHour}h</span>` : ''}
+        </div>
+        ${descHtml}
+        <div class="task-actions" id="actions-${t.id}" style="display:none">
+          ${prolongBtnHtml}
+          ${closeBtnHtml}
+        </div>
+      </div>`;
+  }
+
+  function toggleTaskDetail(taskId) {
+    const desc    = document.getElementById('desc-' + taskId);
+    const actions = document.getElementById('actions-' + taskId);
+    const isOpen  = actions.style.display === 'block';
+    if (desc)    desc.style.display    = isOpen ? 'none' : 'block';
+    actions.style.display = isOpen ? 'none' : 'block';
+  }
+  window.toggleTaskDetail = toggleTaskDetail;
+
+  // ── 延時申請 dialog ────────────────────────────────────
+  let prolongCtx = null;  // { taskId, taskStatus, currentDueDate }
+
+  function openProlongDialog(taskId, taskStatus, taskName, currentDueDate) {
+    prolongCtx = { taskId, taskStatus, currentDueDate };
+    document.getElementById('prolongTaskName').textContent = taskName;
+    document.getElementById('prolongCurrentDate').textContent = currentDueDate || '無';
+
+    // Default new date: +7 days from current due, time = 23:59
+    const baseDate = currentDueDate ? currentDueDate.slice(0, 10) : todayStr();
+    const baseDt   = new Date(baseDate + 'T00:00:00Z');
+    baseDt.setUTCDate(baseDt.getUTCDate() + 7);
+    document.getElementById('prolongNewDate').value =
+      baseDt.toISOString().slice(0, 10);
+    document.getElementById('prolongNewTime').value = '23:59';
+    document.getElementById('prolongHours').value   = '8';
+    document.getElementById('prolongReason').value  = '';
+    document.getElementById('prolongModal').style.display = 'flex';
+  }
+  window.openProlongDialog = openProlongDialog;
+
+  function closeProlongDialog() {
+    document.getElementById('prolongModal').style.display = 'none';
+    prolongCtx = null;
+  }
+  window.closeProlongDialog = closeProlongDialog;
+
+  async function submitProlong() {
+    if (!prolongCtx) return;
+    const newDate = document.getElementById('prolongNewDate').value;
+    const newTime = document.getElementById('prolongNewTime').value || '23:59';
+    const hours   = parseFloat(document.getElementById('prolongHours').value);
+    const reason  = document.getElementById('prolongReason').value.trim();
+
+    if (!newDate) { showToast('❌ 請選擇新到期日'); return; }
+    if (!hours || hours <= 0) { showToast('❌ 請輸入延長時數'); return; }
+
+    const prolongDate = `${newDate} ${newTime}`;
+    if (prolongCtx.currentDueDate && prolongDate <= prolongCtx.currentDueDate) {
+      showToast('❌ 新到期日必須晚於目前到期日');
+      return;
+    }
+
+    showLoading('送出延時申請...');
+    try {
+      const res = await fetch('/api/econtact/prolong-task', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lineUserId,
+          taskId:       prolongCtx.taskId,
+          taskStatus:   prolongCtx.taskStatus,
+          prolongDate,
+          prolongTime:  hours,
+          prolongReason: reason,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast('❌ ' + (data.error || '延時申請失敗'));
+        return;
+      }
+      closeProlongDialog();
+      showToast(data.message || '🕒 延時申請已送出');
+      setTimeout(() => initTasks(), 800);
+    } catch (err) {
+      showToast('❌ 網路錯誤：' + err.message);
+    } finally {
+      hideLoading();
+    }
+  }
+  window.submitProlong = submitProlong;
+
+  async function confirmCloseTask(taskId, taskName) {
+    if (!confirm(`確定要送出結案審核嗎？\n\n任務：${taskName}\n\n送出後需等主管簽核才會正式結案。`)) return;
+    showLoading('送出結案審核...');
+    try {
+      const res = await fetch('/api/econtact/close-task', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lineUserId, taskId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast('❌ ' + (data.error || '結案失敗'));
+        return;
+      }
+      showToast(data.message || '✅ 已送出結案審核');
+      // Reload list
+      setTimeout(() => initTasks(), 800);
+    } catch (err) {
+      showToast('❌ 網路錯誤：' + err.message);
+    } finally {
+      hideLoading();
+    }
+  }
+  window.confirmCloseTask = confirmCloseTask;
+
+  async function initTasks() {
+    const errDiv  = document.getElementById('tasksError');
+    const listDiv = document.getElementById('tasksList');
+    errDiv.innerHTML = '';
+
+    if (!lineUserId) {
+      errDiv.innerHTML = `<div class="error-card">⚠️ 無法取得用戶資訊，請重新開啟頁面。</div>`;
+      return;
+    }
+
+    showLoading('載入任務清單...');
+    try {
+      const res  = await fetch(`/api/econtact/my-tasks?lineUserId=${encodeURIComponent(lineUserId)}`);
+      const data = await res.json();
+      if (!res.ok) {
+        errDiv.innerHTML = `<div class="error-card">⚠️ ${data.error || '查詢失敗'}</div>`;
+        return;
+      }
+
+      if (!data.length) {
+        listDiv.innerHTML = `
+          <div style="text-align:center;padding:32px 0;color:#94a3b8">
+            <div style="font-size:36px;margin-bottom:8px">🎉</div>
+            <div style="font-size:14px">目前沒有未關閉的任務</div>
+          </div>`;
+        document.getElementById('tasksSubtitle').textContent = '尚未關閉的任務（共 0 筆）';
+        return;
+      }
+
+      const overdueCount = data.filter(t => t.isOverdue).length;
+      document.getElementById('tasksSubtitle').textContent =
+        `共 ${data.length} 筆${overdueCount ? `（其中 ${overdueCount} 筆已過期）` : ''}，依到期日排序`;
+
+      listDiv.innerHTML = data.map(renderTaskCard).join('');
+    } catch (err) {
+      errDiv.innerHTML = `<div class="error-card">❌ 網路錯誤：${err.message}</div>`;
+    } finally {
+      hideLoading();
+    }
+  }
+</script>
+</body>
+</html>

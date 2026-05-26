@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2500" height="843" viewBox="0 0 2500 843">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d1b2a"/>
+      <stop offset="100%" style="stop-color:#1a2f4a"/>
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#06C755"/>
+      <stop offset="100%" style="stop-color:#00A844"/>
+    </linearGradient>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF8C42"/>
+      <stop offset="100%" style="stop-color:#E8731A"/>
+    </linearGradient>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A9EFF"/>
+      <stop offset="100%" style="stop-color:#2979E8"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="2500" height="843" fill="url(#bgGrad)"/>
+
+  <!-- 分隔線 -->
+  <line x1="833"  y1="40"  x2="833"  y2="803" stroke="#ffffff20" stroke-width="2"/>
+  <line x1="1667" y1="40"  x2="1667" y2="803" stroke="#ffffff20" stroke-width="2"/>
+
+  <!-- ══════════ 左：上班打卡 ══════════ -->
+  <!-- 按鈕圓角背景 -->
+  <rect x="60" y="60" width="713" height="723" rx="36" ry="36"
+        fill="#ffffff08" stroke="#06C75540" stroke-width="2"/>
+
+  <!-- 圓形圖示背景 -->
+  <circle cx="416" cy="280" r="130" fill="url(#greenGrad)" filter="url(#shadow)" opacity="0.95"/>
+
+  <!-- 太陽圖示 -->
+  <circle cx="416" cy="280" r="56" fill="#fff" opacity="0.95"/>
+  <!-- 光芒 -->
+  <g stroke="#fff" stroke-width="12" stroke-linecap="round" opacity="0.7">
+    <line x1="416" y1="188" x2="416" y2="164"/>
+    <line x1="416" y1="372" x2="416" y2="396"/>
+    <line x1="324" y1="280" x2="300" y2="280"/>
+    <line x1="508" y1="280" x2="532" y2="280"/>
+    <line x1="351" y1="215" x2="334" y2="198"/>
+    <line x1="481" y1="215" x2="498" y2="198"/>
+    <line x1="351" y1="345" x2="334" y2="362"/>
+    <line x1="481" y1="345" x2="498" y2="362"/>
+  </g>
+  <!-- 太陽中心遮圓 -->
+  <circle cx="416" cy="280" r="38" fill="url(#greenGrad)"/>
+
+  <!-- 打卡機圖示（中心小圖） -->
+  <rect x="398" y="262" width="36" height="36" rx="6" fill="#fff" opacity="0.9"/>
+  <rect x="406" y="271" width="20" height="4" rx="2" fill="#06C755"/>
+  <rect x="406" y="280" width="20" height="4" rx="2" fill="#06C755"/>
+  <rect x="406" y="289" width="12" height="4" rx="2" fill="#06C755"/>
+
+  <!-- 主標題 -->
+  <text x="416" y="476" font-family="'PingFang TC','Microsoft JhengHei',sans-serif"
+        font-size="80" font-weight="700" fill="#ffffff" text-anchor="middle">上班打卡</text>
+
+  <!-- 副標題 -->
+  <text x="416" y="566" font-family="'PingFang TC','Microsoft JhengHei',sans-serif"
+        font-size="44" fill="#06C755" text-anchor="middle" font-weight="600">Clock In</text>
+
+  <!-- 說明文字 -->
+  <text x="416" y="660" font-family="'PingFang TC','Microsoft JhengHei',sans-serif"
+        font-size="36" fill="#ffffff60" text-anchor="middle">點擊記錄上班時間</text>
+
+  <!-- 底部裝飾條 -->
+  <rect x="316" y="730" width="200" height="6" rx="3" fill="url(#greenGrad)" opacity="0.8"/>
+
+
+  <!-- ══════════ 中：下班打卡 ══════════ -->
+  <rect x="893" y="60" width="714" height="723" rx="36" ry="36"
+        fill="#ffffff08" stroke="#FF8C4240" stroke-width="2"/>
+
+  <circle cx="1250" cy="280" r="130" fill="url(#orangeGrad)" filter="url(#shadow)" opacity="0.95"/>
+
+  <!-- 月亮圖示 -->
+  <path d="M1250,178 A102,102 0 1,0 1250,382 A70,70 0 1,1 1250,178 Z"
+        fill="#fff" opacity="0.95"/>
+
+  <!-- 星星 -->
+  <g fill="#fff" opacity="0.8">
+    <polygon points="1330,200 1335,215 1350,215 1338,224 1342,239 1330,230 1318,239 1322,224 1310,215 1325,215"
+             transform="scale(0.6) translate(900,80)"/>
+    <circle cx="1346" cy="218" r="8"/>
+    <circle cx="1322" cy="178" r="5"/>
+    <circle cx="1362" cy="252" r="4"/>
+  </g>
+
+  <text x="1250" y="476" font-family="'PingFang TC','Microsoft JhengHei',sans-serif"
+        font-size="80" font-weight="700" fill="#ffffff" text-anchor="middle">下班打卡</text>
+
+  <text x="1250" y="566" font-family="'PingFang TC','Microsoft JhengHei',sans-serif"
+        font-size="44" fill="#FF8C42" text-anchor="middle" font-weight="600">Clock Out</text>
+
+  <text x="1250" y="660" font-family="'PingFang TC','Microsoft JhengHei',sans-serif"
+        font-size="36" fill="#ffffff60" text-anchor="middle">點擊記錄下班時間</text>
+
+  <rect x="1150" y="730" width="200" height="6" rx="3" fill="url(#orangeGrad)" opacity="0.8"/>
+
+
+  <!-- ══════════ 右：填寫工時 ══════════ -->
+  <rect x="1727" y="60" width="713" height="723" rx="36" ry="36"
+        fill="#ffffff08" stroke="#4A9EFF40" stroke-width="2"/>
+
+  <circle cx="2084" cy="280" r="130" fill="url(#blueGrad)" filter="url(#shadow)" opacity="0.95"/>
+
+  <!-- 文件圖示 -->
+  <rect x="2030" y="220" width="108" height="130" rx="10" fill="#fff" opacity="0.95"/>
+  <!-- 文件折角 -->
+  <polygon points="2112,220 2138,246 2112,246" fill="#4A9EFF" opacity="0.5"/>
+  <!-- 文件線條 -->
+  <g stroke="#4A9EFF" stroke-width="8" stroke-linecap="round">
+    <line x1="2050" y1="270" x2="2110" y2="270"/>
+    <line x1="2050" y1="293" x2="2110" y2="293"/>
+    <line x1="2050" y1="316" x2="2090" y2="316"/>
+  </g>
+  <!-- 鉛筆圖示 -->
+  <g transform="translate(2090,305) rotate(-45)">
+    <rect x="0" y="0" width="20" height="60" rx="4" fill="#FFD700"/>
+    <polygon points="0,60 20,60 10,80" fill="#f4a261"/>
+    <rect x="0" y="0" width="20" height="12" rx="4" fill="#aaa"/>
+  </g>
+
+  <text x="2084" y="476" font-family="'PingFang TC','Microsoft JhengHei',sans-serif"
+        font-size="80" font-weight="700" fill="#ffffff" text-anchor="middle">填寫工時</text>
+
+  <text x="2084" y="566" font-family="'PingFang TC','Microsoft JhengHei',sans-serif"
+        font-size="44" fill="#4A9EFF" text-anchor="middle" font-weight="600">Work Hours</text>
+
+  <text x="2084" y="660" font-family="'PingFang TC','Microsoft JhengHei',sans-serif"
+        font-size="36" fill="#ffffff60" text-anchor="middle">填寫今日工作時數</text>
+
+  <rect x="1984" y="730" width="200" height="6" rx="3" fill="url(#blueGrad)" opacity="0.8"/>
+</svg>

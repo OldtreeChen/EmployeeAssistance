@@ -1,0 +1,58 @@
+services:
+
+  # ── Node.js 應用程式（含 Puppeteer）─────────────────
+  app:
+    build: .
+    container_name: line-punch-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"        # 對外服務 port，由外部 Nginx 反代
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=db
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+      - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - punch-net
+    volumes:
+      - ./public:/app/public
+    shm_size: '256mb'
+    cap_add:
+      - SYS_ADMIN
+
+  # ── MySQL 資料庫（僅內部存取）────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: line-punch-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-changeme_root}
+      MYSQL_DATABASE:      ${DB_NAME:-line_punch_system}
+      MYSQL_USER:          ${DB_USER}
+      MYSQL_PASSWORD:      ${DB_PASSWORD}
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root",
+             "-p${DB_ROOT_PASSWORD:-changeme_root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - punch-net
+    # MySQL 不對外暴露，只走內部 network
+
+volumes:
+  db-data:
+    driver: local
+
+networks:
+  punch-net:
+    driver: bridge
