@@ -2015,23 +2015,47 @@
 
   function laCalcHours(startDate, startTime, endDate, endTime) {
     if (!startDate || !startTime || !endDate || !endTime) return 0;
-    const s = new Date(`${startDate}T${startTime}:00`);
-    const e = new Date(`${endDate}T${endTime}:00`);
-    if (e <= s) return 0;
-    let mins = (e - s) / 60000;
-    // Deduct 1h lunch break per day if span covers 12:00–13:00
-    const days = Math.floor((e - s) / 86400000) + 1;
-    for (let i = 0; i < days; i++) {
-      const dayStart = new Date(s);
-      dayStart.setDate(dayStart.getDate() + i);
-      dayStart.setHours(12, 0, 0, 0);
-      const dayEnd = new Date(dayStart);
-      dayEnd.setHours(13, 0, 0, 0);
-      const sCheck = (i === 0) ? s : new Date(s.getFullYear(), s.getMonth(), s.getDate() + i, 0, 0);
-      const eCheck = (i === days - 1) ? e : new Date(e.getFullYear(), e.getMonth(), e.getDate() - (days - 1 - i), 23, 59);
-      if (sCheck <= dayStart && eCheck >= dayEnd) mins -= 60;
+
+    const WORK_START      = '09:00';
+    const WORK_END        = '18:00';
+    const LUNCH_START_MIN = 12 * 60;   // 720
+    const LUNCH_END_MIN   = 13 * 60;   // 780
+    const MAX_PER_DAY     = 8;
+
+    function toMins(t) {
+      const [h, m] = t.split(':').map(Number);
+      return h * 60 + m;
     }
-    return Math.max(0, mins / 60);
+
+    // 計算單一天的工作時數（最高 8 小時，扣除覆蓋到 12:00–13:00 的午休）
+    function calcDayHours(dayStart, dayEnd) {
+      const s = toMins(dayStart);
+      const e = toMins(dayEnd);
+      if (e <= s) return 0;
+      let mins = e - s;
+      // 只扣除實際覆蓋到午休的分鐘數
+      if (s < LUNCH_END_MIN && e > LUNCH_START_MIN) {
+        mins -= Math.min(e, LUNCH_END_MIN) - Math.max(s, LUNCH_START_MIN);
+      }
+      return Math.min(Math.max(0, mins / 60), MAX_PER_DAY);
+    }
+
+    // 用 UTC noon 計算跨幾天，避免夏令時問題
+    const sd = new Date(startDate + 'T12:00:00Z');
+    const ed = new Date(endDate   + 'T12:00:00Z');
+    const diffDays = Math.round((ed - sd) / 86400000);
+
+    if (diffDays === 0) {
+      // 同一天：直接計算
+      return calcDayHours(startTime, endTime);
+    }
+
+    // 跨日：第一天 + 中間整天 + 最後一天，每天獨立計算並各自限制在 8 小時內
+    let total = 0;
+    total += calcDayHours(startTime, WORK_END);          // 第一天：開始時間 → 18:00
+    total += Math.max(0, diffDays - 1) * MAX_PER_DAY;   // 中間整天：每天 8h
+    total += calcDayHours(WORK_START, endTime);          // 最後一天：09:00 → 結束時間
+    return total;
   }
 
   function laUpdateHours() {
@@ -2139,7 +2163,19 @@
     if (!startDate || !endDate) { errDiv.innerHTML = '<div class="error-card">⚠️ 請選擇請假日期</div>'; return; }
     if (totalHours <= 0) { errDiv.innerHTML = '<div class="error-card">⚠️ 請假時數必須大於 0</div>'; return; }
     if (!deputyId) { errDiv.innerHTML = '<div class="error-card">⚠️ 請選擇代理人</div>'; return; }
-    if (!selectedLeaveRecordId) { errDiv.innerHTML = '<div class="error-card">⚠️ 請選擇餘假抵扣記錄</div>'; return; }
+
+    // 若餘假記錄尚未載入（使用者直接按送出），自動查詢並選取第一筆
+    if (!selectedLeaveRecordId) {
+      btn.disabled = true; btn.textContent = '⏳ 查詢餘假...';
+      showLoading('查詢餘假記錄...');
+      await _laDoLoadAvailRecords();
+      hideLoading();
+      btn.disabled = false; btn.textContent = '✅ 送出請假申請';
+      if (!selectedLeaveRecordId) {
+        errDiv.innerHTML = `<div class="error-card">⚠️ 找不到可用的「${leaveCodeToName(leaveCode)}」餘假記錄，請確認假別與日期是否正確</div>`;
+        return;
+      }
+    }
 
     const rec = leaveAvailRecords.find(r => r.id === selectedLeaveRecordId);
     if (!rec) { errDiv.innerHTML = '<div class="error-card">⚠️ 餘假記錄不存在，請重新選擇</div>'; return; }
