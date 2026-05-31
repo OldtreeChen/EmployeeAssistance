@@ -1306,12 +1306,12 @@
         <button type="button" class="task-entry-remove" onclick="removeEntry(${id})">✕</button>
       </div>
       <div class="entry-field">
-        <label>任務 <span class="req">*</span></label>
-        <select class="entry-task" required>${buildTaskOptions()}</select>
-      </div>
-      <div class="entry-field">
         <label>類型 <span class="req">*</span></label>
         <select class="entry-type" required>${buildTypeOptions()}</select>
+      </div>
+      <div class="entry-field entry-task-field">
+        <label>任務 <span class="req">*</span></label>
+        <select class="entry-task" required>${buildTaskOptions()}</select>
       </div>
       <div class="entry-field">
         <label>時數 <span class="req">*</span></label>
@@ -1326,6 +1326,17 @@
       </div>`;
     document.getElementById('taskList').appendChild(div);
     div.querySelector('.entry-hours').addEventListener('input', updateTotal);
+
+    // 類型變更：休假時隱藏任務欄並清除 required
+    div.querySelector('.entry-type').addEventListener('change', function() {
+      const taskField = div.querySelector('.entry-task-field');
+      const taskSel   = div.querySelector('.entry-task');
+      const isLeave   = this.value === '休假';
+      taskField.style.display = isLeave ? 'none' : '';
+      taskSel.required        = !isLeave;
+      if (isLeave) taskSel.value = '';
+    });
+
     updateTotal();
     refreshEntryNumbers();
   }
@@ -1361,15 +1372,20 @@
 
     const items = [];
     for (const entry of entries) {
-      const taskSel  = entry.querySelector('.entry-task');
-      const taskId   = taskSel.value;
-      const selOpt   = taskSel.options[taskSel.selectedIndex];
-      const taskName = selOpt?.dataset?.name  || '';
-      const taskDeptId = selOpt?.dataset?.dept || '';
       const type     = entry.querySelector('.entry-type').value;
       const workTime = entry.querySelector('.entry-hours').value;
       const desc     = entry.querySelector('.entry-desc').value;
-      if (!taskId || !type || !workTime) { showToast('❌ 請填寫所有必填欄位'); return; }
+      const isLeave  = type === '休假';
+
+      const taskSel    = entry.querySelector('.entry-task');
+      const taskId     = isLeave ? '' : taskSel.value;
+      const selOpt     = isLeave ? null : taskSel.options[taskSel.selectedIndex];
+      const taskName   = selOpt?.dataset?.name || '';
+      const taskDeptId = selOpt?.dataset?.dept || '';
+
+      // 非休假時，任務必填
+      if (!type || !workTime) { showToast('❌ 請填寫所有必填欄位'); return; }
+      if (!isLeave && !taskId) { showToast('❌ 請選擇任務'); return; }
       items.push({ taskId, taskName, taskDeptId, type, workTime, description: desc });
     }
 
